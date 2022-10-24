@@ -1,4 +1,4 @@
-export const getPermissions = () => {
+export const getPermissions = (screenShare = false) => {
     // Older browsers might not implement mediaDevices at all, so we set an empty object first
     if (navigator.mediaDevices === undefined) {
         navigator.mediaDevices = {};
@@ -33,14 +33,30 @@ export const getPermissions = () => {
         navigator.mozGetUserMedia;
 
     return new Promise((resolve, reject) => {
-        navigator.mediaDevices
-            .getUserMedia({ video: true, audio: true })
-            .then(stream => {
-                resolve(stream);
-            })
-            .catch(err => {
-                reject(err);
-                //   throw new Error(`Unable to fetch stream ${err}`);
-            });
+        if (screenShare) {
+            navigator.mediaDevices
+                .getDisplayMedia({
+                    video: { cursor: "alway" },
+                    audio: true
+                })
+                .then(stream => {
+                    resolve(stream);
+                })
+                .catch(err => {
+                    reject(err);
+                    //   throw new Error(`Unable to fetch stream ${err}`);
+                });
+        } else {
+            navigator.mediaDevices
+                .getUserMedia({ video: true, audio: true })
+                .then(stream => {
+                    resolve(stream);
+                })
+                .catch(err => {
+                    reject(err);
+                    //   throw new Error(`Unable to fetch stream ${err}`);
+                });
+        }
+
     });
 };

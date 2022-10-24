@@ -2,9 +2,24 @@
   <div class="container">
       <div class="row">
           <div class="col">
-              <button v-if="!onLive" class="btn btn-success" @click="startStream">Start Stream</button><br />
-              <button v-if="onLive" class="btn btn-danger" @click="stopStream">Stop Stream</button>
-              <p v-if="isVisibleLink">Share the following streaming link: {{ streamLink }}</p>
+              <div v-if="!onLive">
+                  <button class="btn btn-success" @click="startStream">
+                      Demarrer en direct
+                  </button><br />
+              </div>
+              <div v-if="onLive">
+                  <button type="button" class="btn btn-danger mx-4" @click="stopStream">Arrêter en direct</button>
+                  <button type="button" class="btn btn-info" @click="toggleMuteAudio">
+                      {{ mutedAudio ? "Unmute" : "Mute" }}
+                  </button>
+                  <button type="button" class="btn btn-primary" @click="toggleMuteVideo">
+                      {{ mutedVideo ? "ShowVideo" : "HideVideo" }}
+                  </button>
+                  <button type="button" class="btn btn-warning" @click="screenShare">
+                      {{ shareScreen ? "Caméra" : "Ecran" }}
+                  </button>
+              </div>
+              <p v-if="isVisibleLink">Lien de partage: {{ streamLink }}</p>
           </div>
       </div>
     <div class="row">
@@ -38,6 +53,9 @@ export default {
     return {
         onLive: false,
         stream: null,
+        mutedAudio: false,
+        mutedVideo: false,
+        shareScreen: false,
       isVisibleLink: false,
       streamingPresenceChannel: null,
       streamingUsers: [],
@@ -71,7 +89,7 @@ export default {
       //   audio: true,
       // });
       // microphone and camera permissions
-      const stream = await getPermissions();
+      const stream = await getPermissions(this.shareScreen);
       this.$refs.broadcaster.srcObject = stream;
 
       this.initializeStreamingChannel();
@@ -79,6 +97,32 @@ export default {
       this.isVisibleLink = true;
       this.onLive = true;
     },
+      toggleMuteAudio() {
+          if (this.mutedAudio) {
+              this.$refs.broadcaster.srcObject.getAudioTracks()[0].enabled = true;
+              this.mutedAudio = false;
+          } else {
+              this.$refs.broadcaster.srcObject.getAudioTracks()[0].enabled = false;
+              this.mutedAudio = true;
+          }
+      },
+
+      toggleMuteVideo() {
+          if (this.mutedVideo) {
+              this.$refs.broadcaster.srcObject.getVideoTracks()[0].enabled = true;
+              this.mutedVideo = false;
+          } else {
+              this.$refs.broadcaster.srcObject.getVideoTracks()[0].enabled = false;
+              this.mutedVideo = true;
+          }
+      },
+      screenShare() {
+        if (this.shareScreen) {
+            this.shareScreen = false;
+        } else {
+            this.shareScreen = true;
+        }
+      },
       stopStream() {
         const videoElem = this.$refs.broadcaster;
         const streamVideo = videoElem.srcObject;
@@ -101,7 +145,7 @@ export default {
             config: {
               iceServers: [
                 {
-                  urls: "stun:openrelay.metered.ca:80",
+                  urls: "stun:stun.zilwa.fr:5349",
                 },
                 {
                   urls: this.turn_url,

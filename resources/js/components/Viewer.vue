@@ -3,9 +3,8 @@
     <div class="row">
       <div class="col-md-8 offset-md-2">
         <button class="btn btn-success" @click="joinBroadcast">
-          Join Stream</button
-        ><br />
-
+          Rejoint en direct
+        </button><br />
         <video autoplay ref="viewer"></video>
       </div>
     </div>
@@ -50,7 +49,7 @@ export default {
         config: {
           iceServers: [
             {
-              urls: "stun:openrelay.metered.ca:80",
+                urls: "stun:stun.zilwa.fr:5349",
             },
             {
               urls: this.turn_url,
@@ -111,6 +110,7 @@ export default {
       });
 
       peer.on("error", (err) => {
+          console.log(err)
         console.log("handle error gracefully");
       });
 

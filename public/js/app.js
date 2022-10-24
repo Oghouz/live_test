@@ -2359,6 +2359,21 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -2368,6 +2383,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     return {
       onLive: false,
       stream: null,
+      mutedAudio: false,
+      mutedVideo: false,
+      shareScreen: false,
       isVisibleLink: false,
       streamingPresenceChannel: null,
       streamingUsers: [],
@@ -2403,7 +2421,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
             switch (_context.prev = _context.next) {
               case 0:
                 _context.next = 2;
-                return Object(_helpers__WEBPACK_IMPORTED_MODULE_2__["getPermissions"])();
+                return Object(_helpers__WEBPACK_IMPORTED_MODULE_2__["getPermissions"])(_this.shareScreen);
 
               case 2:
                 stream = _context.sent;
@@ -2424,6 +2442,31 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           }
         }, _callee);
       }))();
+    },
+    toggleMuteAudio: function toggleMuteAudio() {
+      if (this.mutedAudio) {
+        this.$refs.broadcaster.srcObject.getAudioTracks()[0].enabled = true;
+        this.mutedAudio = false;
+      } else {
+        this.$refs.broadcaster.srcObject.getAudioTracks()[0].enabled = false;
+        this.mutedAudio = true;
+      }
+    },
+    toggleMuteVideo: function toggleMuteVideo() {
+      if (this.mutedVideo) {
+        this.$refs.broadcaster.srcObject.getVideoTracks()[0].enabled = true;
+        this.mutedVideo = false;
+      } else {
+        this.$refs.broadcaster.srcObject.getVideoTracks()[0].enabled = false;
+        this.mutedVideo = true;
+      }
+    },
+    screenShare: function screenShare() {
+      if (this.shareScreen) {
+        this.shareScreen = false;
+      } else {
+        this.shareScreen = true;
+      }
     },
     stopStream: function stopStream() {
       var videoElem = this.$refs.broadcaster;
@@ -2447,7 +2490,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
             stream: stream,
             config: {
               iceServers: [{
-                urls: "stun:openrelay.metered.ca:80"
+                urls: "stun:stun.zilwa.fr:5349"
               }, {
                 urls: _this2.turn_url,
                 username: _this2.turn_username,
@@ -3096,7 +3139,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
-//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Viewer",
@@ -3122,7 +3164,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         trickle: false,
         config: {
           iceServers: [{
-            urls: "stun:openrelay.metered.ca:80"
+            urls: "stun:stun.zilwa.fr:5349"
           }, {
             urls: this.turn_url,
             username: this.turn_username,
@@ -3170,6 +3212,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         cleanupCallback();
       });
       peer.on("error", function (err) {
+        console.log(err);
         console.log("handle error gracefully");
       });
 
@@ -54748,31 +54791,87 @@ var render = function() {
     _c("div", { staticClass: "row" }, [
       _c("div", { staticClass: "col" }, [
         !_vm.onLive
-          ? _c(
-              "button",
-              {
-                staticClass: "btn btn-success",
-                on: { click: _vm.startStream }
-              },
-              [_vm._v("Start Stream")]
-            )
+          ? _c("div", [
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-success",
+                  on: { click: _vm.startStream }
+                },
+                [
+                  _vm._v(
+                    "\n                    Demarrer en direct\n                "
+                  )
+                ]
+              ),
+              _c("br")
+            ])
           : _vm._e(),
-        _c("br"),
         _vm._v(" "),
         _vm.onLive
-          ? _c(
-              "button",
-              { staticClass: "btn btn-danger", on: { click: _vm.stopStream } },
-              [_vm._v("Stop Stream")]
-            )
+          ? _c("div", [
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-danger mx-4",
+                  attrs: { type: "button" },
+                  on: { click: _vm.stopStream }
+                },
+                [_vm._v("Arrêter en direct")]
+              ),
+              _vm._v(" "),
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-info",
+                  attrs: { type: "button" },
+                  on: { click: _vm.toggleMuteAudio }
+                },
+                [
+                  _vm._v(
+                    "\n                    " +
+                      _vm._s(_vm.mutedAudio ? "Unmute" : "Mute") +
+                      "\n                "
+                  )
+                ]
+              ),
+              _vm._v(" "),
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-primary",
+                  attrs: { type: "button" },
+                  on: { click: _vm.toggleMuteVideo }
+                },
+                [
+                  _vm._v(
+                    "\n                    " +
+                      _vm._s(_vm.mutedVideo ? "ShowVideo" : "HideVideo") +
+                      "\n                "
+                  )
+                ]
+              ),
+              _vm._v(" "),
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-warning",
+                  attrs: { type: "button" },
+                  on: { click: _vm.screenShare }
+                },
+                [
+                  _vm._v(
+                    "\n                    " +
+                      _vm._s(_vm.shareScreen ? "Caméra" : "Ecran") +
+                      "\n                "
+                  )
+                ]
+              )
+            ])
           : _vm._e(),
         _vm._v(" "),
         _vm.isVisibleLink
-          ? _c("p", [
-              _vm._v(
-                "Share the following streaming link: " + _vm._s(_vm.streamLink)
-              )
-            ])
+          ? _c("p", [_vm._v("Lien de partage: " + _vm._s(_vm.streamLink))])
           : _vm._e()
       ])
     ]),
@@ -55071,7 +55170,7 @@ var render = function() {
         _c(
           "button",
           { staticClass: "btn btn-success", on: { click: _vm.joinBroadcast } },
-          [_vm._v("\n        Join Stream")]
+          [_vm._v("\n        Rejoint en direct\n      ")]
         ),
         _c("br"),
         _vm._v(" "),
@@ -67734,6 +67833,8 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getPermissions", function() { return getPermissions; });
 var getPermissions = function getPermissions() {
+  var screenShare = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
   // Older browsers might not implement mediaDevices at all, so we set an empty object first
   if (navigator.mediaDevices === undefined) {
     navigator.mediaDevices = {};
@@ -67761,14 +67862,27 @@ var getPermissions = function getPermissions() {
 
   navigator.mediaDevices.getUserMedia = navigator.mediaDevices.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
   return new Promise(function (resolve, reject) {
-    navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true
-    }).then(function (stream) {
-      resolve(stream);
-    })["catch"](function (err) {
-      reject(err); //   throw new Error(`Unable to fetch stream ${err}`);
-    });
+    if (screenShare) {
+      navigator.mediaDevices.getDisplayMedia({
+        video: {
+          cursor: "alway"
+        },
+        audio: true
+      }).then(function (stream) {
+        resolve(stream);
+      })["catch"](function (err) {
+        reject(err); //   throw new Error(`Unable to fetch stream ${err}`);
+      });
+    } else {
+      navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      }).then(function (stream) {
+        resolve(stream);
+      })["catch"](function (err) {
+        reject(err); //   throw new Error(`Unable to fetch stream ${err}`);
+      });
+    }
   });
 };
 
