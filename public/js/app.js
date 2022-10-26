@@ -2359,6 +2359,33 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -2368,6 +2395,11 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     return {
       onLive: false,
       stream: null,
+      mutedAudio: false,
+      audioMutedClass: "fa fa-microphone-slash",
+      mutedVideo: false,
+      screenShared: false,
+      loading: false,
       isVisibleLink: false,
       streamingPresenceChannel: null,
       streamingUsers: [],
@@ -2393,17 +2425,22 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       var _this = this;
 
       return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee() {
-        var stream;
         return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
                 _context.next = 2;
-                return Object(_helpers__WEBPACK_IMPORTED_MODULE_2__["getPermissions"])();
+                return navigator.mediaDevices.getUserMedia({
+                  video: true,
+                  audio: true
+                });
 
               case 2:
-                stream = _context.sent;
-                _this.$refs.broadcaster.srcObject = stream;
+                _this.stream = _context.sent;
+                // microphone and camera permissions
+                //this.stream = await getPermissions(this.screenShared);
+                _this.loading = true;
+                _this.$refs.broadcaster.srcObject = _this.stream;
 
                 _this.initializeStreamingChannel();
 
@@ -2412,13 +2449,87 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
                 _this.isVisibleLink = true;
                 _this.onLive = true;
+                _this.loading = false;
 
-              case 8:
+              case 10:
               case "end":
                 return _context.stop();
             }
           }
         }, _callee);
+      }))();
+    },
+    toggleMuteAudio: function toggleMuteAudio() {
+      if (this.mutedAudio) {
+        this.$refs.broadcaster.srcObject.getAudioTracks()[0].enabled = true;
+        this.mutedAudio = false;
+        this.audioMutedClass = "fa fa-microphone-slash";
+      } else {
+        this.$refs.broadcaster.srcObject.getAudioTracks()[0].enabled = false;
+        this.mutedAudio = true;
+        this.audioMutedClass = "fa fa-microphone";
+      }
+    },
+    toggleMuteVideo: function toggleMuteVideo() {
+      if (this.mutedVideo) {
+        this.$refs.broadcaster.srcObject.getVideoTracks()[0].enabled = true;
+        this.mutedVideo = false;
+      } else {
+        this.$refs.broadcaster.srcObject.getVideoTracks()[0].enabled = false;
+        this.mutedVideo = true;
+      }
+    },
+    shareScreen: function shareScreen() {
+      var _this2 = this;
+
+      return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee2() {
+        return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee2$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                if (!_this2.screenShared) {
+                  _context2.next = 7;
+                  break;
+                }
+
+                _this2.screenShared = false;
+                _context2.next = 4;
+                return navigator.mediaDevices.getUserMedia({
+                  video: true,
+                  audio: true
+                });
+
+              case 4:
+                _this2.stream = _context2.sent;
+                _context2.next = 11;
+                break;
+
+              case 7:
+                _this2.screenShared = true;
+                _context2.next = 10;
+                return navigator.mediaDevices.getDisplayMedia({
+                  video: {
+                    cursor: "alway"
+                  },
+                  audio: true
+                });
+
+              case 10:
+                _this2.stream = _context2.sent;
+
+              case 11:
+                _this2.$refs.broadcaster.srcObject = _this2.stream;
+
+                _this2.initializeStreamingChannel();
+
+                _this2.initializeSignalAnswerChannel();
+
+              case 14:
+              case "end":
+                return _context2.stop();
+            }
+          }
+        }, _callee2);
       }))();
     },
     stopStream: function stopStream() {
@@ -2432,7 +2543,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       this.onLive = false;
     },
     peerCreator: function peerCreator(stream, user, signalCallback) {
-      var _this2 = this;
+      var _this3 = this;
 
       var peer;
       return {
@@ -2443,11 +2554,11 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
             stream: stream,
             config: {
               iceServers: [{
-                urls: "stun:openrelay.metered.ca:80"
+                urls: "stun:stun.zilwa.fr:5349"
               }, {
-                urls: _this2.turn_url,
-                username: _this2.turn_username,
-                credential: _this2.turn_credential
+                urls: _this3.turn_url,
+                username: _this3.turn_username,
+                credential: _this3.turn_credential
               }]
             }
           });
@@ -2479,56 +2590,56 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       };
     },
     initializeStreamingChannel: function initializeStreamingChannel() {
-      var _this3 = this;
+      var _this4 = this;
 
       this.streamingPresenceChannel = window.Echo.join("streaming-channel.".concat(this.streamId));
       this.streamingPresenceChannel.here(function (users) {
-        _this3.streamingUsers = users;
+        _this4.streamingUsers = users;
       });
       this.streamingPresenceChannel.joining(function (user) {
         console.log("New User", user); // if this new user is not already on the call, send your stream offer
 
-        var joiningUserIndex = _this3.streamingUsers.findIndex(function (data) {
+        var joiningUserIndex = _this4.streamingUsers.findIndex(function (data) {
           return data.id === user.id;
         });
 
         if (joiningUserIndex < 0) {
-          _this3.streamingUsers.push(user); // A new user just joined the channel so signal that user
+          _this4.streamingUsers.push(user); // A new user just joined the channel so signal that user
 
 
-          _this3.currentlyContactedUser = user.id;
+          _this4.currentlyContactedUser = user.id;
 
-          _this3.$set(_this3.allPeers, "".concat(user.id), _this3.peerCreator(_this3.$refs.broadcaster.srcObject, user, _this3.signalCallback)); // Create Peer
-
-
-          _this3.allPeers[user.id].create(); // Initialize Events
+          _this4.$set(_this4.allPeers, "".concat(user.id), _this4.peerCreator(_this4.$refs.broadcaster.srcObject, user, _this4.signalCallback)); // Create Peer
 
 
-          _this3.allPeers[user.id].initEvents();
+          _this4.allPeers[user.id].create(); // Initialize Events
+
+
+          _this4.allPeers[user.id].initEvents();
         }
       });
       this.streamingPresenceChannel.leaving(function (user) {
         console.log(user.name, "Left"); // destroy peer
 
-        _this3.allPeers[user.id].getPeer().destroy(); // delete peer object
+        _this4.allPeers[user.id].getPeer().destroy(); // delete peer object
 
 
-        delete _this3.allPeers[user.id]; // if one leaving is the broadcaster set streamingUsers to empty array
+        delete _this4.allPeers[user.id]; // if one leaving is the broadcaster set streamingUsers to empty array
 
-        if (user.id === _this3.auth_user_id) {
-          _this3.streamingUsers = [];
+        if (user.id === _this4.auth_user_id) {
+          _this4.streamingUsers = [];
         } else {
           // remove from streamingUsers array
-          var leavingUserIndex = _this3.streamingUsers.findIndex(function (data) {
+          var leavingUserIndex = _this4.streamingUsers.findIndex(function (data) {
             return data.id === user.id;
           });
 
-          _this3.streamingUsers.splice(leavingUserIndex, 1);
+          _this4.streamingUsers.splice(leavingUserIndex, 1);
         }
       });
     },
     initializeSignalAnswerChannel: function initializeSignalAnswerChannel() {
-      var _this4 = this;
+      var _this5 = this;
 
       window.Echo["private"]("stream-signal-channel.".concat(this.auth_user_id)).listen("StreamAnswer", function (_ref) {
         var data = _ref.data;
@@ -2543,7 +2654,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
             sdp: "".concat(data.answer.sdp, "\n")
           });
 
-          _this4.allPeers[_this4.currentlyContactedUser].getPeer().signal(updatedSignal);
+          _this5.allPeers[_this5.currentlyContactedUser].getPeer().signal(updatedSignal);
         }
       });
     },
@@ -3091,12 +3202,21 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Viewer",
   props: ["home_url", "auth_user_id", "stream_id", "turn_url", "turn_username", "turn_credential"],
   data: function data() {
     return {
+      loading: false,
       streamingPresenceChannel: null,
       broadcasterPeer: null,
       broadcasterId: null
@@ -3104,8 +3224,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
   },
   methods: {
     joinBroadcast: function joinBroadcast() {
+      this.loading = true;
       this.initializeStreamingChannel();
       this.initializeSignalOfferChannel(); // a private channel where the viewer listens to incoming signalling offer
+
+      this.loading = false;
     },
     initializeStreamingChannel: function initializeStreamingChannel() {
       this.streamingPresenceChannel = window.Echo.join("streaming-channel.".concat(this.stream_id));
@@ -3116,7 +3239,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         trickle: false,
         config: {
           iceServers: [{
-            urls: "stun:openrelay.metered.ca:80"
+            urls: "stun:stun.zilwa.fr:5349"
           }, {
             urls: this.turn_url,
             username: this.turn_username,
@@ -3164,6 +3287,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         cleanupCallback();
       });
       peer.on("error", function (err) {
+        console.log(err);
         console.log("handle error gracefully");
       });
 
@@ -9605,6 +9729,25 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 // module
 exports.push([module.i, "\nmain[data-v-f5a5b2d6] {\r\n  margin-top: 50px;\n}\n#video-container[data-v-f5a5b2d6] {\r\n  width: 700px;\r\n  height: 500px;\r\n  max-width: 90vw;\r\n  max-height: 50vh;\r\n  margin: 0 auto;\r\n  border: 1px solid #099dfd;\r\n  position: relative;\r\n  box-shadow: 1px 1px 11px #9e9e9e;\r\n  background-color: #fff;\n}\n#local-video[data-v-f5a5b2d6] {\r\n  width: 30%;\r\n  height: 30%;\r\n  position: absolute;\r\n  left: 10px;\r\n  bottom: 10px;\r\n  border: 1px solid #fff;\r\n  border-radius: 6px;\r\n  z-index: 2;\r\n  cursor: pointer;\n}\n#remote-video[data-v-f5a5b2d6] {\r\n  width: 100%;\r\n  height: 100%;\r\n  position: absolute;\r\n  left: 0;\r\n  right: 0;\r\n  bottom: 0;\r\n  top: 0;\r\n  z-index: 1;\r\n  margin: 0;\r\n  padding: 0;\r\n  cursor: pointer;\n}\n.action-btns[data-v-f5a5b2d6] {\r\n  position: absolute;\r\n  bottom: 20px;\r\n  left: 50%;\r\n  margin-left: -50px;\r\n  z-index: 3;\r\n  display: flex;\r\n  flex-direction: row;\r\n  flex-wrap: wrap;\n}\n#login-form[data-v-f5a5b2d6] {\r\n  margin-top: 100px;\n}\r\n", ""]);
+
+// exports
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Broadcaster.vue?vue&type=style&index=0&id=5f697d13&scoped=true&lang=css&":
+/*!*****************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader??ref--6-1!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Broadcaster.vue?vue&type=style&index=0&id=5f697d13&scoped=true&lang=css& ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loader/lib/css-base.js */ "./node_modules/css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "\nvideo[data-v-5f697d13] {\n    width: 100%;\n    height: auto;\n}\n", ""]);
 
 // exports
 
@@ -53864,6 +54007,36 @@ if(false) {}
 
 /***/ }),
 
+/***/ "./node_modules/style-loader/index.js!./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Broadcaster.vue?vue&type=style&index=0&id=5f697d13&scoped=true&lang=css&":
+/*!*********************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/style-loader!./node_modules/css-loader??ref--6-1!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Broadcaster.vue?vue&type=style&index=0&id=5f697d13&scoped=true&lang=css& ***!
+  \*********************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../node_modules/css-loader??ref--6-1!../../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../../node_modules/postcss-loader/src??ref--6-2!../../../node_modules/vue-loader/lib??vue-loader-options!./Broadcaster.vue?vue&type=style&index=0&id=5f697d13&scoped=true&lang=css& */ "./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Broadcaster.vue?vue&type=style&index=0&id=5f697d13&scoped=true&lang=css&");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../node_modules/style-loader/lib/addStyles.js */ "./node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
 /***/ "./node_modules/style-loader/index.js!./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/VideoChat.vue?vue&type=style&index=0&id=737f9f18&scoped=true&lang=css&":
 /*!*******************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/style-loader!./node_modules/css-loader??ref--6-1!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/VideoChat.vue?vue&type=style&index=0&id=737f9f18&scoped=true&lang=css& ***!
@@ -54742,46 +54915,139 @@ var render = function() {
     _c("div", { staticClass: "row" }, [
       _c("div", { staticClass: "col" }, [
         !_vm.onLive
-          ? _c(
-              "button",
-              {
-                staticClass: "btn btn-success",
-                on: { click: _vm.startStream }
-              },
-              [_vm._v("Lancer en direct")]
-            )
+          ? _c("div", [
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-success btn-xl",
+                  attrs: { disabled: _vm.loading },
+                  on: { click: _vm.startStream }
+                },
+                [
+                  !_vm.loading
+                    ? _c("i", { staticClass: "fa fa-video" })
+                    : _c("i", { staticClass: "fa fa-spinner fa-spin" }),
+                  _vm._v(
+                    "\n                  " +
+                      _vm._s(
+                        _vm.loading
+                          ? "Préparation en cours..."
+                          : "Demarrer en direct"
+                      ) +
+                      "\n                "
+                  )
+                ]
+              ),
+              _c("br")
+            ])
           : _vm._e(),
-        _c("br"),
         _vm._v(" "),
         _vm.onLive
-          ? _c(
-              "button",
-              { staticClass: "btn btn-danger", on: { click: _vm.stopStream } },
-              [_vm._v("Arrêter en direct")]
-            )
-          : _vm._e(),
-        _vm._v(" "),
-        _vm.isVisibleLink
-          ? _c("p", [_vm._v("Lien de partage : " + _vm._s(_vm.streamLink))])
+          ? _c("div", [
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-danger mx-4",
+                  attrs: { type: "button" },
+                  on: { click: _vm.stopStream }
+                },
+                [
+                  _c("i", { staticClass: "fa fa-stop" }),
+                  _vm._v(
+                    "\n                    Arrêter en direct\n                "
+                  )
+                ]
+              ),
+              _vm._v(" "),
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-info",
+                  attrs: { type: "button" },
+                  on: { click: _vm.toggleMuteAudio }
+                },
+                [
+                  _c("i", {
+                    staticClass: "fa",
+                    class: _vm.mutedAudio
+                      ? "fa-microphone"
+                      : "fa-microphone-slash"
+                  }),
+                  _vm._v(
+                    "\n                    " +
+                      _vm._s(_vm.mutedAudio ? "Unmuted" : "Muted") +
+                      "\n                "
+                  )
+                ]
+              ),
+              _vm._v(" "),
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-info",
+                  attrs: { type: "button" },
+                  on: { click: _vm.toggleMuteVideo }
+                },
+                [
+                  _c("i", {
+                    staticClass: "fa",
+                    class: _vm.mutedVideo ? "fa-video" : "fa-video"
+                  }),
+                  _vm._v(
+                    "\n                    " +
+                      _vm._s(_vm.mutedVideo ? "ShowVideo" : "HideVideo") +
+                      "\n                "
+                  )
+                ]
+              ),
+              _vm._v(" "),
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-info",
+                  attrs: { type: "button" },
+                  on: { click: _vm.shareScreen }
+                },
+                [
+                  _c("i", {
+                    staticClass: "fa",
+                    class: _vm.screenShared ? "fa-camera" : "fa-desktop"
+                  }),
+                  _vm._v(
+                    "\n                    " +
+                      _vm._s(_vm.screenShared ? "Camera" : "Ecran") +
+                      "\n                "
+                  )
+                ]
+              )
+            ])
           : _vm._e()
       ])
     ]),
     _vm._v(" "),
     _c("div", { staticClass: "row" }, [
-      _c("div", { staticClass: "col-md-8" }, [
-        _c("canvas", { attrs: { id: "canvas", width: "000", height: "150" } }),
+      _c("div", { staticClass: "col" }, [
+        _vm.isVisibleLink
+          ? _c("p", [_vm._v("Lien de partage: " + _vm._s(_vm.streamLink))])
+          : _vm._e()
+      ])
+    ]),
+    _vm._v(" "),
+    _c("div", { staticClass: "row" }, [
+      _c("div", { staticClass: "col-sm-8" }, [
+        _c("canvas", { attrs: { id: "canvas", width: "100", height: "150" } }),
         _vm._v(" "),
         _c("video", {
           ref: "broadcaster",
-          attrs: { autoplay: "", playsinline: "" }
+          attrs: { autoplay: "", playsinline: "", width: "640", height: "480" }
         })
       ]),
       _vm._v(" "),
       _c(
         "div",
-        { staticClass: "col-md-4" },
+        { staticClass: "col-sm-4" },
         [
-          _c("p", [_vm._v("Online users:")]),
+          _c("p", [_vm._v("Les participant(s):")]),
           _vm._v(" "),
           _vm._l(_vm.streamingUsers, function(user) {
             return _c("ul", { staticClass: "list-group" }, [
@@ -55060,13 +55326,34 @@ var render = function() {
       _c("div", { staticClass: "col-md-8 offset-md-2" }, [
         _c(
           "button",
-          { staticClass: "btn btn-success", on: { click: _vm.joinBroadcast } },
-          [_vm._v("\n        Join Stream")]
+          {
+            staticClass: "btn btn-success",
+            attrs: { disabled: _vm.loading },
+            on: { click: _vm.joinBroadcast }
+          },
+          [
+            _vm.loading
+              ? _c("i", { staticClass: "fa fa-spinner fa-spin" })
+              : _vm._e(),
+            _vm._v(
+              "\n          " +
+                _vm._s(
+                  _vm.loading ? "Préparation en cours..." : "Rejoint en direct"
+                ) +
+                "\n      "
+            )
+          ]
         ),
-        _c("br"),
-        _vm._v(" "),
-        _c("video", { ref: "viewer", attrs: { autoplay: "" } })
+        _c("br")
       ])
+    ]),
+    _vm._v(" "),
+    _c("div", { staticClass: "row" }, [
+      _c("div", { staticClass: "col-6" }, [
+        _c("video", { ref: "viewer", attrs: { autoplay: "" } })
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "col-6" })
     ])
   ])
 }
@@ -67430,7 +67717,9 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Broadcaster_vue_vue_type_template_id_5f697d13_scoped_true___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Broadcaster.vue?vue&type=template&id=5f697d13&scoped=true& */ "./resources/js/components/Broadcaster.vue?vue&type=template&id=5f697d13&scoped=true&");
 /* harmony import */ var _Broadcaster_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Broadcaster.vue?vue&type=script&lang=js& */ "./resources/js/components/Broadcaster.vue?vue&type=script&lang=js&");
-/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+/* empty/unused harmony star reexport *//* harmony import */ var _Broadcaster_vue_vue_type_style_index_0_id_5f697d13_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Broadcaster.vue?vue&type=style&index=0&id=5f697d13&scoped=true&lang=css& */ "./resources/js/components/Broadcaster.vue?vue&type=style&index=0&id=5f697d13&scoped=true&lang=css&");
+/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
 
 
 
@@ -67438,7 +67727,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /* normalize component */
 
-var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_3__["default"])(
   _Broadcaster_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
   _Broadcaster_vue_vue_type_template_id_5f697d13_scoped_true___WEBPACK_IMPORTED_MODULE_0__["render"],
   _Broadcaster_vue_vue_type_template_id_5f697d13_scoped_true___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
@@ -67467,6 +67756,22 @@ component.options.__file = "resources/js/components/Broadcaster.vue"
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_Broadcaster_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib??ref--4-0!../../../node_modules/vue-loader/lib??vue-loader-options!./Broadcaster.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Broadcaster.vue?vue&type=script&lang=js&");
 /* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_Broadcaster_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/Broadcaster.vue?vue&type=style&index=0&id=5f697d13&scoped=true&lang=css&":
+/*!**********************************************************************************************************!*\
+  !*** ./resources/js/components/Broadcaster.vue?vue&type=style&index=0&id=5f697d13&scoped=true&lang=css& ***!
+  \**********************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_Broadcaster_vue_vue_type_style_index_0_id_5f697d13_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/style-loader!../../../node_modules/css-loader??ref--6-1!../../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../../node_modules/postcss-loader/src??ref--6-2!../../../node_modules/vue-loader/lib??vue-loader-options!./Broadcaster.vue?vue&type=style&index=0&id=5f697d13&scoped=true&lang=css& */ "./node_modules/style-loader/index.js!./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Broadcaster.vue?vue&type=style&index=0&id=5f697d13&scoped=true&lang=css&");
+/* harmony import */ var _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_Broadcaster_vue_vue_type_style_index_0_id_5f697d13_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_Broadcaster_vue_vue_type_style_index_0_id_5f697d13_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__);
+/* harmony reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_Broadcaster_vue_vue_type_style_index_0_id_5f697d13_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__) if(["default"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_Broadcaster_vue_vue_type_style_index_0_id_5f697d13_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__[key]; }) }(__WEBPACK_IMPORT_KEY__));
+
 
 /***/ }),
 
@@ -67724,6 +68029,8 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getPermissions", function() { return getPermissions; });
 var getPermissions = function getPermissions() {
+  var screenShare = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
   // Older browsers might not implement mediaDevices at all, so we set an empty object first
   if (navigator.mediaDevices === undefined) {
     navigator.mediaDevices = {};
@@ -67751,14 +68058,27 @@ var getPermissions = function getPermissions() {
 
   navigator.mediaDevices.getUserMedia = navigator.mediaDevices.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
   return new Promise(function (resolve, reject) {
-    navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true
-    }).then(function (stream) {
-      resolve(stream);
-    })["catch"](function (err) {
-      reject(err); //   throw new Error(`Unable to fetch stream ${err}`);
-    });
+    if (screenShare) {
+      navigator.mediaDevices.getDisplayMedia({
+        video: {
+          cursor: "alway"
+        },
+        audio: true
+      }).then(function (stream) {
+        resolve(stream);
+      })["catch"](function (err) {
+        reject(err); //   throw new Error(`Unable to fetch stream ${err}`);
+      });
+    } else {
+      navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      }).then(function (stream) {
+        resolve(stream);
+      })["catch"](function (err) {
+        reject(err); //   throw new Error(`Unable to fetch stream ${err}`);
+      });
+    }
   });
 };
 

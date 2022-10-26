@@ -2,18 +2,45 @@
   <div class="container">
       <div class="row">
           <div class="col">
-              <button v-if="!onLive" class="btn btn-success" @click="startStream">Lancer en direct</button><br />
-              <button v-if="onLive" class="btn btn-danger" @click="stopStream">Arrêter en direct</button>
-              <p v-if="isVisibleLink">Lien de partage : {{ streamLink }}</p>
+              <div v-if="!onLive">
+                  <button class="btn btn-success btn-xl" @click="startStream" :disabled="loading">
+                      <i v-if="!loading" class="fa fa-video"></i>
+                    <i v-else class="fa fa-spinner fa-spin"></i>
+                    {{ loading ? "Préparation en cours..." : "Demarrer en direct"}}
+                  </button><br />
+              </div>
+              <div v-if="onLive">
+                  <button type="button" class="btn btn-danger mx-4" @click="stopStream">
+                      <i class="fa fa-stop"></i>
+                      Arrêter en direct
+                  </button>
+                  <button type="button" class="btn btn-info" @click="toggleMuteAudio">
+                      <i class="fa" :class="mutedAudio ? 'fa-microphone' : 'fa-microphone-slash' "></i>
+                      {{ mutedAudio ? "Unmuted" : "Muted" }}
+                  </button>
+                  <button type="button" class="btn btn-info" @click="toggleMuteVideo">
+                      <i class="fa" :class="mutedVideo ? 'fa-video' : 'fa-video' "></i>
+                      {{ mutedVideo ? "ShowVideo" : "HideVideo" }}
+                  </button>
+                  <button type="button" class="btn btn-info" @click="shareScreen">
+                      <i class="fa" :class="screenShared ? 'fa-camera' : 'fa-desktop'"></i>
+                      {{ screenShared ? "Camera" : "Ecran" }}
+                  </button>
+              </div>
+          </div>
+      </div>
+      <div class="row">
+          <div class="col">
+              <p v-if="isVisibleLink">Lien de partage: {{ streamLink }}</p>
           </div>
       </div>
     <div class="row">
-      <div class="col-md-8">
-          <canvas id="canvas" width="000" height="150"></canvas>
-        <video autoplay ref="broadcaster" playsinline></video>
+      <div class="col-sm-8">
+          <canvas id="canvas" width="100" height="150"></canvas>
+          <video autoplay ref="broadcaster" playsinline width="640" height="480"></video>
       </div>
-        <div class="col-md-4">
-            <p>Online users:</p>
+        <div class="col-sm-4">
+            <p>Les participant(s):</p>
             <ul class="list-group" v-for="user in streamingUsers">
                 <li class="list-group-item"><strong class="text-success">O</strong> {{ user.name }}</li>
             </ul>
@@ -39,6 +66,11 @@ export default {
     return {
         onLive: false,
         stream: null,
+        mutedAudio: false,
+        audioMutedClass: "fa fa-microphone-slash",
+        mutedVideo: false,
+        screenShared: false,
+      loading: false,
       isVisibleLink: false,
       streamingPresenceChannel: null,
       streamingUsers: [],
@@ -63,19 +95,60 @@ export default {
 
   methods: {
     async startStream() {
-      // const stream = await navigator.mediaDevices.getUserMedia({
-      //   video: true,
-      //   audio: true,
-      // });
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
       // microphone and camera permissions
-      const stream = await getPermissions();
-      this.$refs.broadcaster.srcObject = stream;
+      //this.stream = await getPermissions(this.screenShared);
+      this.loading = true;
+      this.$refs.broadcaster.srcObject = this.stream;
 
       this.initializeStreamingChannel();
       this.initializeSignalAnswerChannel(); // a private channel where the broadcaster listens to incoming signalling answer
       this.isVisibleLink = true;
       this.onLive = true;
+      this.loading = false;
     },
+      toggleMuteAudio() {
+          if (this.mutedAudio) {
+              this.$refs.broadcaster.srcObject.getAudioTracks()[0].enabled = true;
+              this.mutedAudio = false;
+              this.audioMutedClass = "fa fa-microphone-slash"
+          } else {
+              this.$refs.broadcaster.srcObject.getAudioTracks()[0].enabled = false;
+              this.mutedAudio = true;
+              this.audioMutedClass = "fa fa-microphone"
+          }
+      },
+
+      toggleMuteVideo() {
+          if (this.mutedVideo) {
+              this.$refs.broadcaster.srcObject.getVideoTracks()[0].enabled = true;
+              this.mutedVideo = false;
+          } else {
+              this.$refs.broadcaster.srcObject.getVideoTracks()[0].enabled = false;
+              this.mutedVideo = true;
+          }
+      },
+      async shareScreen() {
+        if (this.screenShared) {
+            this.screenShared = false;
+            this.stream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: true,
+            });
+        } else {
+            this.screenShared = true;
+            this.stream = await navigator.mediaDevices.getDisplayMedia({
+                video: { cursor: "alway"},
+                audio: true,
+            });
+        }
+          this.$refs.broadcaster.srcObject = this.stream;
+          this.initializeStreamingChannel();
+          this.initializeSignalAnswerChannel();
+      },
       stopStream() {
         const videoElem = this.$refs.broadcaster;
         const streamVideo = videoElem.srcObject;
@@ -98,7 +171,7 @@ export default {
             config: {
               iceServers: [
                 {
-                  urls: "stun:openrelay.metered.ca:80",
+                  urls: "stun:stun.zilwa.fr:5349",
                 },
                 {
                   urls: this.turn_url,
@@ -242,4 +315,8 @@ export default {
 </script>
 
 <style scoped>
+video {
+    width: 100%;
+    height: auto;
+}
 </style>

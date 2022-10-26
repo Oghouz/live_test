@@ -2,11 +2,19 @@
   <div class="container">
     <div class="row">
       <div class="col-md-8 offset-md-2">
-        <button class="btn btn-success" @click="joinBroadcast">
-          Join Stream</button><br />
-        <video autoplay ref="viewer"></video>
+        <button class="btn btn-success" @click="joinBroadcast" :disabled="loading">
+            <i v-if="loading" class="fa fa-spinner fa-spin"></i>
+            {{ loading ? "Préparation en cours..." : "Rejoint en direct"}}
+        </button><br />
+
       </div>
     </div>
+      <div class="row">
+          <div class="col-6">
+              <video autoplay ref="viewer"></video>
+          </div>
+          <div class="col-6"></div>
+      </div>
   </div>
 </template>
 
@@ -24,6 +32,7 @@ export default {
   ],
   data() {
     return {
+        loading: false,
       streamingPresenceChannel: null,
       broadcasterPeer: null,
       broadcasterId: null,
@@ -32,8 +41,10 @@ export default {
 
   methods: {
     joinBroadcast() {
+        this.loading = true;
       this.initializeStreamingChannel();
       this.initializeSignalOfferChannel(); // a private channel where the viewer listens to incoming signalling offer
+        this.loading = false;
     },
 
     initializeStreamingChannel() {
@@ -49,7 +60,7 @@ export default {
         config: {
           iceServers: [
             {
-              urls: "stun:openrelay.metered.ca:80",
+                urls: "stun:stun.zilwa.fr:5349",
             },
             {
               urls: this.turn_url,
@@ -110,6 +121,7 @@ export default {
       });
 
       peer.on("error", (err) => {
+          console.log(err)
         console.log("handle error gracefully");
       });
 
