@@ -3,9 +3,7 @@
     <div class="row">
       <div class="col-md-8 offset-md-2">
         <button class="btn btn-success" @click="joinBroadcast">
-          Join Stream</button
-        ><br />
-
+          Join Stream</button><br />
         <video autoplay ref="viewer"></video>
       </div>
     </div>
@@ -17,6 +15,7 @@ import Peer from "simple-peer";
 export default {
   name: "Viewer",
   props: [
+      "home_url",
     "auth_user_id",
     "stream_id",
     "turn_url",
@@ -79,7 +78,7 @@ export default {
     handlePeerEvents(peer, incomingOffer, broadcaster, cleanupCallback) {
       peer.on("signal", (data) => {
         axios
-          .post("https://localhost/laravel-video-chat/public/stream-answer", {
+          .post(this.home_url + "/stream-answer", {
             broadcaster,
             answer: data,
           })

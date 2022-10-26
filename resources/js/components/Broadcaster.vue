@@ -2,9 +2,9 @@
   <div class="container">
       <div class="row">
           <div class="col">
-              <button v-if="!onLive" class="btn btn-success" @click="startStream">Start Stream</button><br />
-              <button v-if="onLive" class="btn btn-danger" @click="stopStream">Stop Stream</button>
-              <p v-if="isVisibleLink">Share the following streaming link: {{ streamLink }}</p>
+              <button v-if="!onLive" class="btn btn-success" @click="startStream">Lancer en direct</button><br />
+              <button v-if="onLive" class="btn btn-danger" @click="stopStream">Arrêter en direct</button>
+              <p v-if="isVisibleLink">Lien de partage : {{ streamLink }}</p>
           </div>
       </div>
     <div class="row">
@@ -28,6 +28,7 @@ import { getPermissions } from "../helpers";
 export default {
   name: "Broadcaster",
   props: [
+      "home_url",
     "auth_user_id",
     "env",
     "turn_url",
@@ -56,11 +57,7 @@ export default {
 
     streamLink() {
       // just a quick fix. can be improved by setting the app_url
-      if (this.env === "production") {
-        return `https://laravel-video-call.herokuapp.com/streaming/${this.streamId}`;
-      } else {
-        return `https://localhost/laravel-video-chat/public/streaming/${this.streamId}`;
-      }
+        return `https://localhost/live_test/public/streaming/${this.streamId}`;
     },
   },
 
@@ -228,7 +225,7 @@ export default {
 
     signalCallback(offer, user) {
       axios
-        .post("https://localhost/laravel-video-chat/public/stream-offer", {
+        .post(this.home_url+"/stream-offer", {
           broadcaster: this.auth_user_id,
           receiver: user,
           offer,

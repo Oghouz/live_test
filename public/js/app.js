@@ -2363,7 +2363,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Broadcaster",
-  props: ["auth_user_id", "env", "turn_url", "turn_username", "turn_credential"],
+  props: ["home_url", "auth_user_id", "env", "turn_url", "turn_username", "turn_credential"],
   data: function data() {
     return {
       onLive: false,
@@ -2385,11 +2385,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     },
     streamLink: function streamLink() {
       // just a quick fix. can be improved by setting the app_url
-      if (this.env === "production") {
-        return "https://laravel-video-call.herokuapp.com/streaming/".concat(this.streamId);
-      } else {
-        return "https://localhost/laravel-video-chat/public/streaming/".concat(this.streamId);
-      }
+      return "https://localhost/live_test/public/streaming/".concat(this.streamId);
     }
   },
   methods: {
@@ -2552,7 +2548,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       });
     },
     signalCallback: function signalCallback(offer, user) {
-      axios.post("https://localhost/laravel-video-chat/public/stream-offer", {
+      axios.post(this.home_url + "/stream-offer", {
         broadcaster: this.auth_user_id,
         receiver: user,
         offer: offer
@@ -3095,12 +3091,10 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
-//
-//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Viewer",
-  props: ["auth_user_id", "stream_id", "turn_url", "turn_username", "turn_credential"],
+  props: ["home_url", "auth_user_id", "stream_id", "turn_url", "turn_username", "turn_credential"],
   data: function data() {
     return {
       streamingPresenceChannel: null,
@@ -3145,7 +3139,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       var _this = this;
 
       peer.on("signal", function (data) {
-        axios.post("https://localhost/laravel-video-chat/public/stream-answer", {
+        axios.post(_this.home_url + "/stream-answer", {
           broadcaster: broadcaster,
           answer: data
         }).then(function (res) {
@@ -54754,7 +54748,7 @@ var render = function() {
                 staticClass: "btn btn-success",
                 on: { click: _vm.startStream }
               },
-              [_vm._v("Start Stream")]
+              [_vm._v("Lancer en direct")]
             )
           : _vm._e(),
         _c("br"),
@@ -54763,16 +54757,12 @@ var render = function() {
           ? _c(
               "button",
               { staticClass: "btn btn-danger", on: { click: _vm.stopStream } },
-              [_vm._v("Stop Stream")]
+              [_vm._v("Arrêter en direct")]
             )
           : _vm._e(),
         _vm._v(" "),
         _vm.isVisibleLink
-          ? _c("p", [
-              _vm._v(
-                "Share the following streaming link: " + _vm._s(_vm.streamLink)
-              )
-            ])
+          ? _c("p", [_vm._v("Lien de partage : " + _vm._s(_vm.streamLink))])
           : _vm._e()
       ])
     ]),
@@ -67333,7 +67323,7 @@ window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 
 window.Pusher = __webpack_require__(/*! pusher-js */ "./node_modules/pusher-js/dist/web/pusher.js");
 window.Echo = new laravel_echo__WEBPACK_IMPORTED_MODULE_0__["default"]({
-  authEndpoint: 'https://localhost/laravel-video-chat/public/broadcasting/auth',
+  authEndpoint: 'https://localhost/live_test/public/broadcasting/auth',
   broadcaster: "pusher",
   key: "72df0eb7f9ab196ad397",
   cluster: "eu",
@@ -67792,8 +67782,8 @@ var getPermissions = function getPermissions() {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! C:\wamp64\www\laravel-video-chat\resources\js\app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! C:\wamp64\www\laravel-video-chat\resources\sass\app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! C:\wamp\www\live_test\resources\js\app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! C:\wamp\www\live_test\resources\sass\app.scss */"./resources/sass/app.scss");
 
 
 /***/ }),
