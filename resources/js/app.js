@@ -28,6 +28,7 @@ Vue.component("agora-chat", require("./components/AgoraChat.vue").default);
 
 //  Streaming Components
 Vue.component("broadcaster", require("./components/Broadcaster.vue").default);
+Vue.component("video-broadcaster", require("./components/VideoBroadcaster.vue").default);
 Vue.component("viewer", require("./components/Viewer.vue").default);
 
 /**

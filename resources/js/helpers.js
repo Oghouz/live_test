@@ -1,4 +1,4 @@
-export const getPermissions = (screenShare = false) => {
+export const getPermissions = (shareScreen) => {
     // Older browsers might not implement mediaDevices at all, so we set an empty object first
     if (navigator.mediaDevices === undefined) {
         navigator.mediaDevices = {};
@@ -33,12 +33,9 @@ export const getPermissions = (screenShare = false) => {
         navigator.mozGetUserMedia;
 
     return new Promise((resolve, reject) => {
-        if (screenShare) {
+        if (shareScreen === true) {
             navigator.mediaDevices
-                .getDisplayMedia({
-                    video: { cursor: "alway" },
-                    audio: true
-                })
+                .getDisplayMedia({ video: { cursor: "alway" }, audio: true })
                 .then(stream => {
                     resolve(stream);
                 })

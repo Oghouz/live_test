@@ -2386,11 +2386,35 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Broadcaster",
-  props: ["home_url", "auth_user_id", "env", "turn_url", "turn_username", "turn_credential"],
+  props: ["home_url", "auth_user_id", "env", "turn_url", "turn_username", "turn_credential", "live_id"],
   data: function data() {
     return {
       onLive: false,
@@ -2404,8 +2428,12 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       streamingPresenceChannel: null,
       streamingUsers: [],
       currentlyContactedUser: null,
-      allPeers: {} // this will hold all dynamically created peers using the 'ID' of users who just joined as keys
-
+      allPeers: {},
+      // this will hold all dynamically created peers using the 'ID' of users who just joined as keys
+      totalSeconds: 0,
+      durationHors: '00',
+      durationMinute: '00',
+      durationSecond: '00'
     };
   },
   computed: {
@@ -2417,7 +2445,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     },
     streamLink: function streamLink() {
       // just a quick fix. can be improved by setting the app_url
-      return "https://localhost/live_test/public/streaming/".concat(this.streamId);
+      return "https://live.zilwa.fr/streaming/".concat(this.streamId);
     }
   },
   methods: {
@@ -2429,17 +2457,16 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                _context.next = 2;
-                return navigator.mediaDevices.getUserMedia({
-                  video: true,
-                  audio: true
-                });
+                _this.loading = true; // this.stream = await navigator.mediaDevices.getUserMedia({
+                //     video: true,
+                //     audio: true,
+                // });
 
-              case 2:
+                _context.next = 3;
+                return Object(_helpers__WEBPACK_IMPORTED_MODULE_2__["getPermissions"])(_this.screenShared);
+
+              case 3:
                 _this.stream = _context.sent;
-                // microphone and camera permissions
-                //this.stream = await getPermissions(this.screenShared);
-                _this.loading = true;
                 _this.$refs.broadcaster.srcObject = _this.stream;
 
                 _this.initializeStreamingChannel();
@@ -2451,33 +2478,17 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 _this.onLive = true;
                 _this.loading = false;
 
-              case 10:
+                _this.setLiveStartedTime();
+
+                setInterval(_this.setTime, 1000);
+
+              case 12:
               case "end":
                 return _context.stop();
             }
           }
         }, _callee);
       }))();
-    },
-    toggleMuteAudio: function toggleMuteAudio() {
-      if (this.mutedAudio) {
-        this.$refs.broadcaster.srcObject.getAudioTracks()[0].enabled = true;
-        this.mutedAudio = false;
-        this.audioMutedClass = "fa fa-microphone-slash";
-      } else {
-        this.$refs.broadcaster.srcObject.getAudioTracks()[0].enabled = false;
-        this.mutedAudio = true;
-        this.audioMutedClass = "fa fa-microphone";
-      }
-    },
-    toggleMuteVideo: function toggleMuteVideo() {
-      if (this.mutedVideo) {
-        this.$refs.broadcaster.srcObject.getVideoTracks()[0].enabled = true;
-        this.mutedVideo = false;
-      } else {
-        this.$refs.broadcaster.srcObject.getVideoTracks()[0].enabled = false;
-        this.mutedVideo = true;
-      }
     },
     shareScreen: function shareScreen() {
       var _this2 = this;
@@ -2487,44 +2498,26 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
-                if (!_this2.screenShared) {
-                  _context2.next = 7;
-                  break;
+                if (_this2.screenShared) {
+                  _this2.screenShared = false;
+                } else {
+                  _this2.screenShared = true;
                 }
 
-                _this2.screenShared = false;
-                _context2.next = 4;
-                return navigator.mediaDevices.getUserMedia({
-                  video: true,
-                  audio: true
-                });
+                _context2.next = 3;
+                return Object(_helpers__WEBPACK_IMPORTED_MODULE_2__["getPermissions"])(_this2.screenShared);
 
-              case 4:
+              case 3:
                 _this2.stream = _context2.sent;
-                _context2.next = 11;
-                break;
-
-              case 7:
-                _this2.screenShared = true;
-                _context2.next = 10;
-                return navigator.mediaDevices.getDisplayMedia({
-                  video: {
-                    cursor: "alway"
-                  },
-                  audio: true
-                });
-
-              case 10:
-                _this2.stream = _context2.sent;
-
-              case 11:
                 _this2.$refs.broadcaster.srcObject = _this2.stream;
 
                 _this2.initializeStreamingChannel();
 
                 _this2.initializeSignalAnswerChannel();
 
-              case 14:
+                console.log("screen shared");
+
+              case 8:
               case "end":
                 return _context2.stop();
             }
@@ -2541,10 +2534,12 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       });
       videoElem.srcObject = null;
       this.onLive = false;
+      this.setLiveEndedTime();
     },
     peerCreator: function peerCreator(stream, user, signalCallback) {
       var _this3 = this;
 
+      console.log("peerCreator", stream);
       var peer;
       return {
         create: function create() {
@@ -2554,7 +2549,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
             stream: stream,
             config: {
               iceServers: [{
-                urls: "stun:stun.zilwa.fr:5349"
+                urls: "stun:stun.zilwa.fr"
               }, {
                 urls: _this3.turn_url,
                 username: _this3.turn_username,
@@ -2569,22 +2564,24 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         initEvents: function initEvents() {
           peer.on("signal", function (data) {
             // send offer over here.
+            console.log("peer on signal");
             signalCallback(data, user);
           });
           peer.on("stream", function (stream) {
-            console.log("onStream");
+            console.log("peer on stream");
           });
           peer.on("track", function (track, stream) {
-            console.log("onTrack");
+            console.log("peer on track");
           });
           peer.on("connect", function () {
-            console.log("Broadcaster Peer connected");
+            console.log("peer on connect");
           });
           peer.on("close", function () {
-            console.log("Broadcaster Peer closed");
+            console.log("peer on close");
           });
           peer.on("error", function (err) {
-            console.log("handle error gracefully");
+            console.log("peer on error");
+            console.log(err);
           });
         }
       };
@@ -2609,7 +2606,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
           _this4.currentlyContactedUser = user.id;
 
-          _this4.$set(_this4.allPeers, "".concat(user.id), _this4.peerCreator(_this4.$refs.broadcaster.srcObject, user, _this4.signalCallback)); // Create Peer
+          _this4.$set(_this4.allPeers, "".concat(user.id), _this4.peerCreator(_this4.stream, user, _this4.signalCallback)); // Create Peer
 
 
           _this4.allPeers[user.id].create(); // Initialize Events
@@ -2621,7 +2618,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       this.streamingPresenceChannel.leaving(function (user) {
         console.log(user.name, "Left"); // destroy peer
 
-        _this4.allPeers[user.id].getPeer().destroy(); // delete peer object
+        if (_this4.allPeers[user.id]) {
+          _this4.allPeers[user.id].getPeer().destroy();
+        } // delete peer object
 
 
         delete _this4.allPeers[user.id]; // if one leaving is the broadcaster set streamingUsers to empty array
@@ -2643,6 +2642,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
       window.Echo["private"]("stream-signal-channel.".concat(this.auth_user_id)).listen("StreamAnswer", function (_ref) {
         var data = _ref.data;
+        console.log(data);
         console.log("Signal Answer from private channel");
 
         if (data.answer.renegotiate) {
@@ -2668,6 +2668,50 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       })["catch"](function (err) {
         console.log(err);
       });
+    },
+    toggleMuteAudio: function toggleMuteAudio() {
+      if (this.mutedAudio) {
+        this.$refs.broadcaster.srcObject.getAudioTracks()[0].enabled = true;
+        this.mutedAudio = false;
+        this.audioMutedClass = "fa fa-microphone-slash";
+      } else {
+        this.$refs.broadcaster.srcObject.getAudioTracks()[0].enabled = false;
+        this.mutedAudio = true;
+        this.audioMutedClass = "fa fa-microphone";
+      }
+    },
+    toggleMuteVideo: function toggleMuteVideo() {
+      if (this.mutedVideo) {
+        this.$refs.broadcaster.srcObject.getVideoTracks()[0].enabled = true;
+        this.mutedVideo = false;
+      } else {
+        this.$refs.broadcaster.srcObject.getVideoTracks()[0].enabled = false;
+        this.mutedVideo = true;
+      }
+    },
+    setLiveStartedTime: function setLiveStartedTime() {
+      axios.post(this.home_url + '/dashboard/live/set/started', {
+        live_id: this.live_id
+      });
+    },
+    setLiveEndedTime: function setLiveEndedTime() {
+      axios.post(this.home_url + '/dashboard/live/set/ended', {
+        live_id: this.live_id
+      });
+    },
+    setTime: function setTime() {
+      ++this.totalSeconds;
+      this.durationSecond = this.pad(this.totalSeconds % 60);
+      this.durationMinute = this.pad(parseInt(this.totalSeconds / 60));
+    },
+    pad: function pad(val) {
+      var valString = val + "";
+
+      if (valString.length < 2) {
+        return "0" + valString;
+      } else {
+        return valString;
+      }
     }
   }
 });
@@ -2707,6 +2751,372 @@ __webpack_require__.r(__webpack_exports__);
   },
   mounted: function mounted() {
     console.log(window.Echo);
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/VideoBroadcaster.vue?vue&type=script&lang=js&":
+/*!***************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/VideoBroadcaster.vue?vue&type=script&lang=js& ***!
+  \***************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/regenerator */ "./node_modules/@babel/runtime/regenerator/index.js");
+/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var simple_peer__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! simple-peer */ "./node_modules/simple-peer/index.js");
+/* harmony import */ var simple_peer__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(simple_peer__WEBPACK_IMPORTED_MODULE_1__);
+
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+  name: "Broadcaster",
+  props: ["home_url", "auth_user_id", "env", "turn_url", "turn_username", "turn_credential", "live_id"],
+  data: function data() {
+    return {
+      onLive: false,
+      stream: null,
+      mutedAudio: false,
+      mutedVideo: false,
+      loading: false,
+      isVisibleLink: false,
+      streamingPresenceChannel: null,
+      streamingUsers: [],
+      currentlyContactedUser: null,
+      allPeers: {},
+      // this will hold all dynamically created peers using the 'ID' of users who just joined as keys
+      totalSeconds: 0,
+      durationHors: '00',
+      durationMinute: '00',
+      durationSecond: '00'
+    };
+  },
+  computed: {
+    streamId: function streamId() {
+      // you can improve streamId generation code. As long as we include the
+      // broadcaster's user id, we are assured of getting unique streamiing link everytime.
+      // the current code just generates a fixed streaming link for a particular user.
+      return "".concat(this.auth_user_id, "12acde2");
+    },
+    streamLink: function streamLink() {
+      // just a quick fix. can be improved by setting the app_url
+      return "https://live.zilwa.fr/streaming/".concat(this.streamId);
+    }
+  },
+  methods: {
+    startStream: function startStream() {
+      var _this = this;
+
+      return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee() {
+        var originVideo;
+        return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                _this.loading = true;
+                originVideo = _this.$refs.broadcaster; //originVideo.play();
+
+                if (originVideo.captureStream) {
+                  _this.stream = originVideo.captureStream();
+                  console.log('Captured stream from originVideo with captureStream', _this.stream);
+                } else if (originVideo.mozCaptureStream) {
+                  _this.stream = originVideo.mozCaptureStream();
+                  console.log('Captured stream from originVideo with mozCaptureStream()', _this.stream);
+                } else {
+                  console.log('captureStream() not supported');
+                }
+
+                _this.initializeStreamingChannel();
+
+                _this.initializeSignalAnswerChannel(); // a private channel where the broadcaster listens to incoming signalling answer
+
+
+                _this.isVisibleLink = true;
+                _this.onLive = true;
+                _this.loading = false;
+
+                _this.setLiveStartedTime();
+
+                setInterval(_this.setTime, 1000);
+
+              case 10:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee);
+      }))();
+    },
+    stopStream: function stopStream() {
+      var videoElem = this.$refs.broadcaster;
+      var streamVideo = videoElem.srcObject;
+      var tracks = streamVideo.getTracks();
+      tracks.forEach(function (track) {
+        track.stop();
+      });
+      videoElem.srcObject = null;
+      this.onLive = false;
+      this.setLiveEndedTime();
+    },
+    peerCreator: function peerCreator(stream, user, signalCallback) {
+      var _this2 = this;
+
+      console.log("peerCreator", stream);
+      var peer;
+      return {
+        create: function create() {
+          peer = new simple_peer__WEBPACK_IMPORTED_MODULE_1___default.a({
+            initiator: true,
+            trickle: false,
+            stream: stream,
+            config: {
+              iceServers: [{
+                urls: "stun:stun.zilwa.fr"
+              }, {
+                urls: _this2.turn_url,
+                username: _this2.turn_username,
+                credential: _this2.turn_credential
+              }]
+            }
+          });
+        },
+        getPeer: function getPeer() {
+          return peer;
+        },
+        initEvents: function initEvents() {
+          peer.on("signal", function (data) {
+            // send offer over here.
+            console.log("peer on signal");
+            signalCallback(data, user);
+          });
+          peer.on("stream", function (stream) {
+            console.log("peer on stream");
+          });
+          peer.on("track", function (track, stream) {
+            console.log("peer on track");
+          });
+          peer.on("connect", function () {
+            console.log("peer on connect");
+          });
+          peer.on("close", function () {
+            console.log("peer on close");
+          });
+          peer.on("error", function (err) {
+            console.log("peer on error");
+            console.log(err);
+          });
+        }
+      };
+    },
+    initializeStreamingChannel: function initializeStreamingChannel() {
+      var _this3 = this;
+
+      this.streamingPresenceChannel = window.Echo.join("streaming-channel.".concat(this.streamId));
+      this.streamingPresenceChannel.here(function (users) {
+        _this3.streamingUsers = users;
+      });
+      this.streamingPresenceChannel.joining(function (user) {
+        console.log("New User", user); // if this new user is not already on the call, send your stream offer
+
+        var joiningUserIndex = _this3.streamingUsers.findIndex(function (data) {
+          return data.id === user.id;
+        });
+
+        if (joiningUserIndex < 0) {
+          _this3.streamingUsers.push(user); // A new user just joined the channel so signal that user
+
+
+          _this3.currentlyContactedUser = user.id;
+
+          _this3.$set(_this3.allPeers, "".concat(user.id), _this3.peerCreator(_this3.stream, user, _this3.signalCallback)); // Create Peer
+
+
+          _this3.allPeers[user.id].create(); // Initialize Events
+
+
+          _this3.allPeers[user.id].initEvents();
+        }
+      });
+      this.streamingPresenceChannel.leaving(function (user) {
+        console.log(user.name, "Left"); // destroy peer
+
+        if (_this3.allPeers[user.id]) {
+          _this3.allPeers[user.id].getPeer().destroy();
+        } // delete peer object
+
+
+        delete _this3.allPeers[user.id]; // if one leaving is the broadcaster set streamingUsers to empty array
+
+        if (user.id === _this3.auth_user_id) {
+          _this3.streamingUsers = [];
+        } else {
+          // remove from streamingUsers array
+          var leavingUserIndex = _this3.streamingUsers.findIndex(function (data) {
+            return data.id === user.id;
+          });
+
+          _this3.streamingUsers.splice(leavingUserIndex, 1);
+        }
+      });
+    },
+    initializeSignalAnswerChannel: function initializeSignalAnswerChannel() {
+      var _this4 = this;
+
+      window.Echo["private"]("stream-signal-channel.".concat(this.auth_user_id)).listen("StreamAnswer", function (_ref) {
+        var data = _ref.data;
+        console.log(data);
+        console.log("Signal Answer from private channel");
+
+        if (data.answer.renegotiate) {
+          console.log("renegotating");
+        }
+
+        if (data.answer.sdp) {
+          var updatedSignal = _objectSpread(_objectSpread({}, data.answer), {}, {
+            sdp: "".concat(data.answer.sdp, "\n")
+          });
+
+          _this4.allPeers[_this4.currentlyContactedUser].getPeer().signal(updatedSignal);
+        }
+      });
+    },
+    signalCallback: function signalCallback(offer, user) {
+      axios.post(this.home_url + "/stream-offer", {
+        broadcaster: this.auth_user_id,
+        receiver: user,
+        offer: offer
+      }).then(function (res) {
+        console.log(res);
+      })["catch"](function (err) {
+        console.log(err);
+      });
+    },
+    toggleMuteAudio: function toggleMuteAudio() {
+      if (this.mutedAudio) {
+        this.$refs.broadcaster.mozCaptureStream().getAudioTracks()[0].enabled = true;
+        this.mutedAudio = false;
+      } else {
+        this.$refs.broadcaster.mozCaptureStream().getAudioTracks()[0].enabled = false;
+        this.mutedAudio = true;
+      }
+    },
+    toggleMuteVideo: function toggleMuteVideo() {
+      if (this.mutedVideo) {
+        this.$refs.broadcaster.mozCaptureStream().getVideoTracks()[0].enabled = true;
+        this.mutedVideo = false;
+      } else {
+        this.$refs.broadcaster.mozCaptureStream().getVideoTracks()[0].enabled = false;
+        this.mutedVideo = true;
+      }
+    },
+    setLiveStartedTime: function setLiveStartedTime() {
+      axios.post(this.home_url + '/dashboard/live/set/started', {
+        live_id: this.live_id
+      });
+    },
+    setLiveEndedTime: function setLiveEndedTime() {
+      axios.post(this.home_url + '/dashboard/live/set/ended', {
+        live_id: this.live_id
+      });
+    },
+    setTime: function setTime() {
+      ++this.totalSeconds;
+      this.durationSecond = this.pad(this.totalSeconds % 60);
+      this.durationMinute = this.pad(parseInt(this.totalSeconds / 60));
+    },
+    pad: function pad(val) {
+      var valString = val + "";
+
+      if (valString.length < 2) {
+        return "0" + valString;
+      } else {
+        return valString;
+      }
+    }
   }
 });
 
@@ -3210,6 +3620,21 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Viewer",
@@ -3217,6 +3642,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
   data: function data() {
     return {
       loading: false,
+      liveStarted: false,
+      participated: false,
       streamingPresenceChannel: null,
       broadcasterPeer: null,
       broadcasterId: null
@@ -3227,8 +3654,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       this.loading = true;
       this.initializeStreamingChannel();
       this.initializeSignalOfferChannel(); // a private channel where the viewer listens to incoming signalling offer
-
-      this.loading = false;
     },
     initializeStreamingChannel: function initializeStreamingChannel() {
       this.streamingPresenceChannel = window.Echo.join("streaming-channel.".concat(this.stream_id));
@@ -3239,7 +3664,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         trickle: false,
         config: {
           iceServers: [{
-            urls: "stun:stun.zilwa.fr:5349"
+            urls: "stun:stun.zilwa.fr"
           }, {
             urls: this.turn_url,
             username: this.turn_username,
@@ -3262,33 +3687,35 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       var _this = this;
 
       peer.on("signal", function (data) {
+        console.log("peer on signal");
         axios.post(_this.home_url + "/stream-answer", {
           broadcaster: broadcaster,
           answer: data
         }).then(function (res) {
-          console.log(res);
+          console.log("response", res);
         })["catch"](function (err) {
-          console.log(err);
+          console.log("error", err);
         });
       });
       peer.on("stream", function (stream) {
         // display remote stream
+        console.log("peer on stream", stream);
         _this.$refs.viewer.srcObject = stream;
       });
       peer.on("track", function (track, stream) {
-        console.log("onTrack");
+        console.log("peer on track");
       });
       peer.on("connect", function () {
-        console.log("Viewer Peer connected");
+        console.log("peer on connect");
       });
       peer.on("close", function () {
-        console.log("Viewer Peer closed");
+        console.log("peer on close");
         peer.destroy();
         cleanupCallback();
       });
       peer.on("error", function (err) {
         console.log(err);
-        console.log("handle error gracefully");
+        console.log("peer on error");
       });
 
       var updatedOffer = _objectSpread(_objectSpread({}, incomingOffer), {}, {
@@ -3303,19 +3730,29 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       window.Echo["private"]("stream-signal-channel.".concat(this.auth_user_id)).listen("StreamOffer", function (_ref) {
         var data = _ref.data;
         console.log("Signal Offer from private channel");
+        console.log(data);
         _this2.broadcasterId = data.broadcaster;
 
         _this2.createViewerPeer(data.offer, data.broadcaster);
+
+        _this2.loading = false;
+        _this2.participated = true;
       });
     },
     removeBroadcastVideo: function removeBroadcastVideo() {
       console.log("removingBroadcast Video");
-      alert("Livestream ended by broadcaster");
+      alert("La diffusion est terminée");
+      var viewer = this.$refs.viewer;
+      console.log(viewer);
       var tracks = this.$refs.viewer.srcObject.getTracks();
       tracks.forEach(function (track) {
         track.stop();
       });
       this.$refs.viewer.srcObject = null;
+      this.participated = false;
+    },
+    fullScreen: function fullScreen() {
+      document.getElementById('viewer').requestFullscreen();
     }
   }
 });
@@ -9748,6 +10185,25 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 // module
 exports.push([module.i, "\nvideo[data-v-5f697d13] {\n    width: 100%;\n    height: auto;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/VideoBroadcaster.vue?vue&type=style&index=0&id=0430d29e&scoped=true&lang=css&":
+/*!**********************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader??ref--6-1!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/VideoBroadcaster.vue?vue&type=style&index=0&id=0430d29e&scoped=true&lang=css& ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loader/lib/css-base.js */ "./node_modules/css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "\nvideo[data-v-0430d29e] {\r\n    width: 100%;\r\n    height: auto;\n}\r\n", ""]);
 
 // exports
 
@@ -54037,6 +54493,36 @@ if(false) {}
 
 /***/ }),
 
+/***/ "./node_modules/style-loader/index.js!./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/VideoBroadcaster.vue?vue&type=style&index=0&id=0430d29e&scoped=true&lang=css&":
+/*!**************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/style-loader!./node_modules/css-loader??ref--6-1!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/VideoBroadcaster.vue?vue&type=style&index=0&id=0430d29e&scoped=true&lang=css& ***!
+  \**************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../node_modules/css-loader??ref--6-1!../../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../../node_modules/postcss-loader/src??ref--6-2!../../../node_modules/vue-loader/lib??vue-loader-options!./VideoBroadcaster.vue?vue&type=style&index=0&id=0430d29e&scoped=true&lang=css& */ "./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/VideoBroadcaster.vue?vue&type=style&index=0&id=0430d29e&scoped=true&lang=css&");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../node_modules/style-loader/lib/addStyles.js */ "./node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
 /***/ "./node_modules/style-loader/index.js!./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/VideoChat.vue?vue&type=style&index=0&id=737f9f18&scoped=true&lang=css&":
 /*!*******************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/style-loader!./node_modules/css-loader??ref--6-1!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/VideoChat.vue?vue&type=style&index=0&id=737f9f18&scoped=true&lang=css& ***!
@@ -54911,9 +55397,9 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "container" }, [
-    _c("div", { staticClass: "row" }, [
-      _c("div", { staticClass: "col" }, [
+  return _c("div", [
+    _c("div", { staticClass: "row mb-4 ms-2" }, [
+      _c("div", { staticClass: "col-8" }, [
         !_vm.onLive
           ? _c("div", [
               _c(
@@ -54925,14 +55411,14 @@ var render = function() {
                 },
                 [
                   !_vm.loading
-                    ? _c("i", { staticClass: "fa fa-video" })
+                    ? _c("i", { staticClass: "ti-video-camera" })
                     : _c("i", { staticClass: "fa fa-spinner fa-spin" }),
                   _vm._v(
-                    "\n                  " +
+                    "\n                    " +
                       _vm._s(
                         _vm.loading
-                          ? "Préparation en cours..."
-                          : "Demarrer en direct"
+                          ? " Préparation en cours..."
+                          : " Demarrer en direct"
                       ) +
                       "\n                "
                   )
@@ -54947,12 +55433,12 @@ var render = function() {
               _c(
                 "button",
                 {
-                  staticClass: "btn btn-danger mx-4",
+                  staticClass: "btn btn-social-icon-text btn-youtube",
                   attrs: { type: "button" },
                   on: { click: _vm.stopStream }
                 },
                 [
-                  _c("i", { staticClass: "fa fa-stop" }),
+                  _c("i", { staticClass: "mdi mdi-stop" }),
                   _vm._v(
                     "\n                    Arrêter en direct\n                "
                   )
@@ -54962,16 +55448,16 @@ var render = function() {
               _c(
                 "button",
                 {
-                  staticClass: "btn btn-info",
+                  staticClass: "btn btn-social-icon-text btn-facebook",
                   attrs: { type: "button" },
                   on: { click: _vm.toggleMuteAudio }
                 },
                 [
                   _c("i", {
-                    staticClass: "fa",
+                    staticClass: "mdi",
                     class: _vm.mutedAudio
-                      ? "fa-microphone"
-                      : "fa-microphone-slash"
+                      ? " mdi-microphone-off"
+                      : "mdi-microphone"
                   }),
                   _vm._v(
                     "\n                    " +
@@ -54984,14 +55470,16 @@ var render = function() {
               _c(
                 "button",
                 {
-                  staticClass: "btn btn-info",
+                  staticClass: "btn btn-social-icon-text btn-facebook",
                   attrs: { type: "button" },
                   on: { click: _vm.toggleMuteVideo }
                 },
                 [
                   _c("i", {
-                    staticClass: "fa",
-                    class: _vm.mutedVideo ? "fa-video" : "fa-video"
+                    staticClass: "mdi",
+                    class: _vm.mutedVideo
+                      ? "mdi-camcorder-off"
+                      : "mdi-camcorder"
                   }),
                   _vm._v(
                     "\n                    " +
@@ -55004,14 +55492,14 @@ var render = function() {
               _c(
                 "button",
                 {
-                  staticClass: "btn btn-info",
+                  staticClass: "btn btn-social-icon-text btn-facebook",
                   attrs: { type: "button" },
                   on: { click: _vm.shareScreen }
                 },
                 [
                   _c("i", {
-                    staticClass: "fa",
-                    class: _vm.screenShared ? "fa-camera" : "fa-desktop"
+                    staticClass: "mdi",
+                    class: _vm.screenShared ? "mdi-webcam" : "mdi-monitor"
                   }),
                   _vm._v(
                     "\n                    " +
@@ -55022,44 +55510,96 @@ var render = function() {
               )
             ])
           : _vm._e()
-      ])
+      ]),
+      _vm._v(" "),
+      _vm.onLive
+        ? _c("div", { staticClass: "col-4" }, [
+            _c("div", { staticClass: "display-3" }, [
+              _c("i", { staticClass: "mdi mdi-timer" }),
+              _vm._v(" "),
+              _c("label", { attrs: { id: "hors" } }, [
+                _vm._v(_vm._s(_vm.durationHors))
+              ]),
+              _vm._v(" "),
+              _c("label", [_vm._v(":")]),
+              _vm._v(" "),
+              _c("label", { attrs: { id: "minutes" } }, [
+                _vm._v(_vm._s(_vm.durationMinute))
+              ]),
+              _vm._v(" "),
+              _c("label", [_vm._v(":")]),
+              _vm._v(" "),
+              _c("label", { attrs: { id: "seconds" } }, [
+                _vm._v(_vm._s(_vm.durationSecond))
+              ])
+            ])
+          ])
+        : _vm._e()
     ]),
     _vm._v(" "),
     _c("div", { staticClass: "row" }, [
       _c("div", { staticClass: "col" }, [
         _vm.isVisibleLink
-          ? _c("p", [_vm._v("Lien de partage: " + _vm._s(_vm.streamLink))])
+          ? _c("p", [
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-outline-facebook btn-social-icon-text",
+                  attrs: { type: "button" }
+                },
+                [
+                  _c("i", { staticClass: "ti-share" }),
+                  _vm._v(" "),
+                  _c("span", { staticClass: "ps-1" }, [
+                    _vm._v(_vm._s(_vm.streamLink))
+                  ])
+                ]
+              )
+            ])
           : _vm._e()
       ])
     ]),
     _vm._v(" "),
     _c("div", { staticClass: "row" }, [
       _c("div", { staticClass: "col-sm-8" }, [
-        _c("canvas", { attrs: { id: "canvas", width: "100", height: "150" } }),
-        _vm._v(" "),
-        _c("video", {
-          ref: "broadcaster",
-          attrs: { autoplay: "", playsinline: "", width: "640", height: "480" }
-        })
+        _c("div", { staticClass: "card" }, [
+          _c("div", { staticClass: "card-body" }, [
+            _c("video", {
+              ref: "broadcaster",
+              attrs: {
+                autoplay: "",
+                playsinline: "",
+                width: "640",
+                height: "480"
+              }
+            })
+          ])
+        ])
       ]),
       _vm._v(" "),
-      _c(
-        "div",
-        { staticClass: "col-sm-4" },
-        [
-          _c("p", [_vm._v("Les participant(s):")]),
-          _vm._v(" "),
-          _vm._l(_vm.streamingUsers, function(user) {
-            return _c("ul", { staticClass: "list-group" }, [
-              _c("li", { staticClass: "list-group-item" }, [
-                _c("strong", { staticClass: "text-success" }, [_vm._v("O")]),
-                _vm._v(" " + _vm._s(user.name))
-              ])
-            ])
-          })
-        ],
-        2
-      )
+      _c("div", { staticClass: "col-sm-4" }, [
+        _c("div", { staticClass: "card" }, [
+          _c(
+            "div",
+            { staticClass: "card-body" },
+            [
+              _c("p", { staticClass: "card-title small-text" }, [
+                _vm._v("Les participants:")
+              ]),
+              _vm._v(" "),
+              _vm._l(_vm.streamingUsers, function(user) {
+                return _c("ul", { staticClass: "list-group" }, [
+                  _c("li", { staticClass: "list-group-item" }, [
+                    _c("i", { staticClass: "mdi mdi-account" }),
+                    _vm._v(" " + _vm._s(user.name))
+                  ])
+                ])
+              })
+            ],
+            2
+          )
+        ])
+      ])
     ])
   ])
 }
@@ -55109,6 +55649,216 @@ var staticRenderFns = [
     ])
   }
 ]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/VideoBroadcaster.vue?vue&type=template&id=0430d29e&scoped=true&":
+/*!*******************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/VideoBroadcaster.vue?vue&type=template&id=0430d29e&scoped=true& ***!
+  \*******************************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", [
+    _c("div", { staticClass: "row mb-4 ms-2" }, [
+      _c("div", { staticClass: "col-8" }, [
+        !_vm.onLive
+          ? _c("div", [
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-success btn-xl",
+                  attrs: { disabled: _vm.loading },
+                  on: { click: _vm.startStream }
+                },
+                [
+                  !_vm.loading
+                    ? _c("i", { staticClass: "ti-video-camera" })
+                    : _c("i", { staticClass: "fa fa-spinner fa-spin" }),
+                  _vm._v(
+                    "\n                    " +
+                      _vm._s(
+                        _vm.loading
+                          ? " Préparation en cours..."
+                          : " Demarrer en direct"
+                      ) +
+                      "\n                "
+                  )
+                ]
+              ),
+              _c("br")
+            ])
+          : _vm._e(),
+        _vm._v(" "),
+        _vm.onLive
+          ? _c("div", [
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-social-icon-text btn-youtube",
+                  attrs: { type: "button" },
+                  on: { click: _vm.stopStream }
+                },
+                [
+                  _c("i", { staticClass: "mdi mdi-stop" }),
+                  _vm._v(
+                    "\n                    Arrêter en direct\n                "
+                  )
+                ]
+              ),
+              _vm._v(" "),
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-social-icon-text btn-facebook",
+                  attrs: { type: "button" },
+                  on: { click: _vm.toggleMuteAudio }
+                },
+                [
+                  _c("i", {
+                    staticClass: "mdi",
+                    class: _vm.mutedAudio
+                      ? " mdi-microphone-off"
+                      : "mdi-microphone"
+                  }),
+                  _vm._v(
+                    "\n                    " +
+                      _vm._s(_vm.mutedAudio ? "Unmuted" : "Muted") +
+                      "\n                "
+                  )
+                ]
+              ),
+              _vm._v(" "),
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-social-icon-text btn-facebook",
+                  attrs: { type: "button" },
+                  on: { click: _vm.toggleMuteVideo }
+                },
+                [
+                  _c("i", {
+                    staticClass: "mdi",
+                    class: _vm.mutedVideo
+                      ? "mdi-camcorder-off"
+                      : "mdi-camcorder"
+                  }),
+                  _vm._v(
+                    "\n                    " +
+                      _vm._s(_vm.mutedVideo ? "ShowVideo" : "HideVideo") +
+                      "\n                "
+                  )
+                ]
+              )
+            ])
+          : _vm._e()
+      ]),
+      _vm._v(" "),
+      _vm.onLive
+        ? _c("div", { staticClass: "col-4" }, [
+            _c("div", { staticClass: "display-3" }, [
+              _c("i", { staticClass: "mdi mdi-timer" }),
+              _vm._v(" "),
+              _c("label", { attrs: { id: "hors" } }, [
+                _vm._v(_vm._s(_vm.durationHors))
+              ]),
+              _vm._v(" "),
+              _c("label", [_vm._v(":")]),
+              _vm._v(" "),
+              _c("label", { attrs: { id: "minutes" } }, [
+                _vm._v(_vm._s(_vm.durationMinute))
+              ]),
+              _vm._v(" "),
+              _c("label", [_vm._v(":")]),
+              _vm._v(" "),
+              _c("label", { attrs: { id: "seconds" } }, [
+                _vm._v(_vm._s(_vm.durationSecond))
+              ])
+            ])
+          ])
+        : _vm._e()
+    ]),
+    _vm._v(" "),
+    _c("div", { staticClass: "row" }, [
+      _c("div", { staticClass: "col" }, [
+        _vm.isVisibleLink
+          ? _c("p", [
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-outline-facebook btn-social-icon-text",
+                  attrs: { type: "button" }
+                },
+                [
+                  _c("i", { staticClass: "ti-share" }),
+                  _vm._v(" "),
+                  _c("span", { staticClass: "ps-1" }, [
+                    _vm._v(_vm._s(_vm.streamLink))
+                  ])
+                ]
+              )
+            ])
+          : _vm._e()
+      ])
+    ]),
+    _vm._v(" "),
+    _c("div", { staticClass: "row" }, [
+      _c("div", { staticClass: "col-sm-8" }, [
+        _c("div", { staticClass: "card" }, [
+          _c("div", { staticClass: "card-body" }, [
+            _c("video", {
+              ref: "broadcaster",
+              attrs: {
+                src: "https://localhost/live_test/public/video/test.mp4",
+                id: "originVideo",
+                playsinline: "",
+                controls: "",
+                width: "640",
+                height: "480"
+              }
+            })
+          ])
+        ])
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "col-sm-4" }, [
+        _c("div", { staticClass: "card" }, [
+          _c(
+            "div",
+            { staticClass: "card-body" },
+            [
+              _c("h6", { staticClass: "card-title" }, [
+                _vm._v("Les participants:")
+              ]),
+              _vm._v(" "),
+              _vm._l(_vm.streamingUsers, function(user) {
+                return _c("ul", { staticClass: "list-group" }, [
+                  _c("li", { staticClass: "list-group-item" }, [
+                    _c("i", { staticClass: "mdi mdi-account" }),
+                    _vm._v(" " + _vm._s(user.name))
+                  ])
+                ])
+              })
+            ],
+            2
+          )
+        ])
+      ])
+    ])
+  ])
+}
+var staticRenderFns = []
 render._withStripped = true
 
 
@@ -55324,36 +56074,98 @@ var render = function() {
   return _c("div", { staticClass: "container" }, [
     _c("div", { staticClass: "row" }, [
       _c("div", { staticClass: "col-md-8 offset-md-2" }, [
+        _vm.liveStarted
+          ? _c("span", { staticClass: "badge bg-success" }, [
+              _vm._v("Le live est commerncer")
+            ])
+          : _vm._e(),
+        _vm._v(" "),
+        _c("br"),
+        _vm._v(" "),
         _c(
           "button",
           {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: !_vm.participated,
+                expression: "!participated"
+              }
+            ],
             staticClass: "btn btn-success",
             attrs: { disabled: _vm.loading },
             on: { click: _vm.joinBroadcast }
           },
           [
-            _vm.loading
-              ? _c("i", { staticClass: "fa fa-spinner fa-spin" })
-              : _vm._e(),
+            !_vm.loading
+              ? _c("i", { staticClass: "fa fa-video" })
+              : _c("i", { staticClass: "fa fa-spinner fa-spin" }),
             _vm._v(
-              "\n          " +
+              "\n            " +
                 _vm._s(
                   _vm.loading ? "Préparation en cours..." : "Rejoint en direct"
                 ) +
-                "\n      "
+                "\n        "
             )
           ]
         ),
-        _c("br")
+        _vm._v(" "),
+        _c(
+          "button",
+          {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.participated,
+                expression: "participated"
+              }
+            ],
+            staticClass: "btn btn-danger",
+            on: { click: _vm.removeBroadcastVideo }
+          },
+          [
+            _c("i", { staticClass: "fa fa-video" }),
+            _vm._v(" Quitter en direct\n        ")
+          ]
+        ),
+        _vm._v(" "),
+        _c(
+          "button",
+          {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.participated,
+                expression: "participated"
+              }
+            ],
+            staticClass: "btn btn-info",
+            on: { click: _vm.fullScreen }
+          },
+          [
+            _c("i", { staticClass: "fa fa-th" }),
+            _vm._v("\n              Plain écran\n          ")
+          ]
+        )
       ])
     ]),
     _vm._v(" "),
-    _c("div", { staticClass: "row" }, [
-      _c("div", { staticClass: "col-6" }, [
-        _c("video", { ref: "viewer", attrs: { autoplay: "" } })
+    _c("div", { staticClass: "row mt-2" }, [
+      _c("div", { staticClass: "col-8" }, [
+        _c("div", { staticClass: "card" }, [
+          _c("div", { staticClass: "card-body" }, [
+            _c("video", {
+              ref: "viewer",
+              attrs: { autoplay: "", id: "viewer", width: "640", height: "480" }
+            })
+          ])
+        ])
       ]),
       _vm._v(" "),
-      _c("div", { staticClass: "col-6" })
+      _c("div", { staticClass: "col-4" })
     ])
   ])
 }
@@ -67556,6 +68368,7 @@ Vue.component("video-chat", __webpack_require__(/*! ./components/VideoChat.vue *
 Vue.component("agora-chat", __webpack_require__(/*! ./components/AgoraChat.vue */ "./resources/js/components/AgoraChat.vue")["default"]); //  Streaming Components
 
 Vue.component("broadcaster", __webpack_require__(/*! ./components/Broadcaster.vue */ "./resources/js/components/Broadcaster.vue")["default"]);
+Vue.component("video-broadcaster", __webpack_require__(/*! ./components/VideoBroadcaster.vue */ "./resources/js/components/VideoBroadcaster.vue")["default"]);
 Vue.component("viewer", __webpack_require__(/*! ./components/Viewer.vue */ "./resources/js/components/Viewer.vue")["default"]);
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -67862,6 +68675,93 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/components/VideoBroadcaster.vue":
+/*!******************************************************!*\
+  !*** ./resources/js/components/VideoBroadcaster.vue ***!
+  \******************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _VideoBroadcaster_vue_vue_type_template_id_0430d29e_scoped_true___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./VideoBroadcaster.vue?vue&type=template&id=0430d29e&scoped=true& */ "./resources/js/components/VideoBroadcaster.vue?vue&type=template&id=0430d29e&scoped=true&");
+/* harmony import */ var _VideoBroadcaster_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./VideoBroadcaster.vue?vue&type=script&lang=js& */ "./resources/js/components/VideoBroadcaster.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _VideoBroadcaster_vue_vue_type_style_index_0_id_0430d29e_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./VideoBroadcaster.vue?vue&type=style&index=0&id=0430d29e&scoped=true&lang=css& */ "./resources/js/components/VideoBroadcaster.vue?vue&type=style&index=0&id=0430d29e&scoped=true&lang=css&");
+/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_3__["default"])(
+  _VideoBroadcaster_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _VideoBroadcaster_vue_vue_type_template_id_0430d29e_scoped_true___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _VideoBroadcaster_vue_vue_type_template_id_0430d29e_scoped_true___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  "0430d29e",
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/VideoBroadcaster.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/VideoBroadcaster.vue?vue&type=script&lang=js&":
+/*!*******************************************************************************!*\
+  !*** ./resources/js/components/VideoBroadcaster.vue?vue&type=script&lang=js& ***!
+  \*******************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_VideoBroadcaster_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib??ref--4-0!../../../node_modules/vue-loader/lib??vue-loader-options!./VideoBroadcaster.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/VideoBroadcaster.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_VideoBroadcaster_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/VideoBroadcaster.vue?vue&type=style&index=0&id=0430d29e&scoped=true&lang=css&":
+/*!***************************************************************************************************************!*\
+  !*** ./resources/js/components/VideoBroadcaster.vue?vue&type=style&index=0&id=0430d29e&scoped=true&lang=css& ***!
+  \***************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_VideoBroadcaster_vue_vue_type_style_index_0_id_0430d29e_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/style-loader!../../../node_modules/css-loader??ref--6-1!../../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../../node_modules/postcss-loader/src??ref--6-2!../../../node_modules/vue-loader/lib??vue-loader-options!./VideoBroadcaster.vue?vue&type=style&index=0&id=0430d29e&scoped=true&lang=css& */ "./node_modules/style-loader/index.js!./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/VideoBroadcaster.vue?vue&type=style&index=0&id=0430d29e&scoped=true&lang=css&");
+/* harmony import */ var _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_VideoBroadcaster_vue_vue_type_style_index_0_id_0430d29e_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_VideoBroadcaster_vue_vue_type_style_index_0_id_0430d29e_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__);
+/* harmony reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_VideoBroadcaster_vue_vue_type_style_index_0_id_0430d29e_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__) if(["default"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_VideoBroadcaster_vue_vue_type_style_index_0_id_0430d29e_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__[key]; }) }(__WEBPACK_IMPORT_KEY__));
+
+
+/***/ }),
+
+/***/ "./resources/js/components/VideoBroadcaster.vue?vue&type=template&id=0430d29e&scoped=true&":
+/*!*************************************************************************************************!*\
+  !*** ./resources/js/components/VideoBroadcaster.vue?vue&type=template&id=0430d29e&scoped=true& ***!
+  \*************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_VideoBroadcaster_vue_vue_type_template_id_0430d29e_scoped_true___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../node_modules/vue-loader/lib??vue-loader-options!./VideoBroadcaster.vue?vue&type=template&id=0430d29e&scoped=true& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/VideoBroadcaster.vue?vue&type=template&id=0430d29e&scoped=true&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_VideoBroadcaster_vue_vue_type_template_id_0430d29e_scoped_true___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_VideoBroadcaster_vue_vue_type_template_id_0430d29e_scoped_true___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
 /***/ "./resources/js/components/VideoChat.vue":
 /*!***********************************************!*\
   !*** ./resources/js/components/VideoChat.vue ***!
@@ -68028,9 +68928,7 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getPermissions", function() { return getPermissions; });
-var getPermissions = function getPermissions() {
-  var screenShare = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-
+var getPermissions = function getPermissions(shareScreen) {
   // Older browsers might not implement mediaDevices at all, so we set an empty object first
   if (navigator.mediaDevices === undefined) {
     navigator.mediaDevices = {};
@@ -68058,7 +68956,7 @@ var getPermissions = function getPermissions() {
 
   navigator.mediaDevices.getUserMedia = navigator.mediaDevices.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
   return new Promise(function (resolve, reject) {
-    if (screenShare) {
+    if (shareScreen === true) {
       navigator.mediaDevices.getDisplayMedia({
         video: {
           cursor: "alway"

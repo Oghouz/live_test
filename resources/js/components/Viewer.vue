@@ -2,18 +2,33 @@
   <div class="container">
     <div class="row">
       <div class="col-md-8 offset-md-2">
-        <button class="btn btn-success" @click="joinBroadcast" :disabled="loading">
-            <i v-if="loading" class="fa fa-spinner fa-spin"></i>
+          <span class="badge bg-success"v-if="liveStarted">Le live est commerncer</span>
+<!--          <span class="badge bg-secondary" v-else>Pas de live pour le moment.</span>-->
+          <br>
+        <button class="btn btn-success" @click="joinBroadcast" :disabled="loading" v-show="!participated">
+            <i v-if="!loading" class="fa fa-video"></i>
+            <i v-else class="fa fa-spinner fa-spin"></i>
             {{ loading ? "Préparation en cours..." : "Rejoint en direct"}}
-        </button><br />
+        </button>
+        <button class="btn btn-danger" v-show="participated" @click="removeBroadcastVideo">
+            <i class="fa fa-video"></i> Quitter en direct
+        </button>
+          <button class="btn btn-info" v-show="participated" @click="fullScreen">
+              <i class="fa fa-th"></i>
+              Plain écran
+          </button>
 
       </div>
     </div>
-      <div class="row">
-          <div class="col-6">
-              <video autoplay ref="viewer"></video>
+      <div class="row mt-2">
+          <div class="col-8">
+              <div class="card">
+                  <div class="card-body">
+                      <video autoplay id="viewer" ref="viewer" width="640" height="480"></video>
+                  </div>
+              </div>
           </div>
-          <div class="col-6"></div>
+          <div class="col-4"></div>
       </div>
   </div>
 </template>
@@ -24,134 +39,141 @@ export default {
   name: "Viewer",
   props: [
       "home_url",
-    "auth_user_id",
-    "stream_id",
-    "turn_url",
-    "turn_username",
-    "turn_credential",
+      "auth_user_id",
+      "stream_id",
+      "turn_url",
+      "turn_username",
+      "turn_credential",
   ],
   data() {
     return {
-        loading: false,
+      loading: false,
+      liveStarted: false,
+      participated: false,
       streamingPresenceChannel: null,
       broadcasterPeer: null,
       broadcasterId: null,
     };
   },
-
-  methods: {
-    joinBroadcast() {
-        this.loading = true;
-      this.initializeStreamingChannel();
-      this.initializeSignalOfferChannel(); // a private channel where the viewer listens to incoming signalling offer
-        this.loading = false;
-    },
-
-    initializeStreamingChannel() {
-      this.streamingPresenceChannel = window.Echo.join(
-        `streaming-channel.${this.stream_id}`
-      );
-    },
-
-    createViewerPeer(incomingOffer, broadcaster) {
-      const peer = new Peer({
-        initiator: false,
-        trickle: false,
-        config: {
-          iceServers: [
-            {
-                urls: "stun:stun.zilwa.fr:5349",
-            },
-            {
-              urls: this.turn_url,
-              username: this.turn_username,
-              credential: this.turn_credential,
-            },
-          ],
+    methods: {
+        joinBroadcast() {
+          this.loading = true;
+          this.initializeStreamingChannel();
+          this.initializeSignalOfferChannel(); // a private channel where the viewer listens to incoming signalling offer
         },
-      });
-
-      // Add Transceivers
-      peer.addTransceiver("video", { direction: "recvonly" });
-      peer.addTransceiver("audio", { direction: "recvonly" });
-
-      // Initialize Peer events for connection to remote peer
-      this.handlePeerEvents(
-        peer,
-        incomingOffer,
-        broadcaster,
-        this.removeBroadcastVideo
-      );
-
-      this.broadcasterPeer = peer;
-    },
-
-    handlePeerEvents(peer, incomingOffer, broadcaster, cleanupCallback) {
-      peer.on("signal", (data) => {
-        axios
-          .post(this.home_url + "/stream-answer", {
-            broadcaster,
-            answer: data,
-          })
-          .then((res) => {
-            console.log(res);
-          })
-          .catch((err) => {
-            console.log(err);
+        initializeStreamingChannel() {
+          this.streamingPresenceChannel = window.Echo.join(
+            `streaming-channel.${this.stream_id}`
+          );
+        },
+        createViewerPeer(incomingOffer, broadcaster) {
+          const peer = new Peer({
+            initiator: false,
+            trickle: false,
+            config: {
+              iceServers: [
+                {
+                    urls: "stun:stun.zilwa.fr",
+                },
+                {
+                  urls: this.turn_url,
+                  username: this.turn_username,
+                  credential: this.turn_credential,
+                },
+              ],
+            },
           });
-      });
 
-      peer.on("stream", (stream) => {
-        // display remote stream
-        this.$refs.viewer.srcObject = stream;
-      });
+          // Add Transceivers
+          peer.addTransceiver("video", { direction: "recvonly" });
+          peer.addTransceiver("audio", { direction: "recvonly" });
 
-      peer.on("track", (track, stream) => {
-        console.log("onTrack");
-      });
+          // Initialize Peer events for connection to remote peer
+          this.handlePeerEvents(
+            peer,
+            incomingOffer,
+            broadcaster,
+            this.removeBroadcastVideo
+          );
 
-      peer.on("connect", () => {
-        console.log("Viewer Peer connected");
-      });
+          this.broadcasterPeer = peer;
+        },
+        handlePeerEvents(peer, incomingOffer, broadcaster, cleanupCallback) {
+          peer.on("signal", (data) => {
+              console.log("peer on signal")
+            axios
+              .post(this.home_url + "/stream-answer", {
+                broadcaster,
+                answer: data,
+              })
+              .then((res) => {
+                console.log("response", res);
+              })
+              .catch((err) => {
+                console.log("error", err);
+              });
+          });
 
-      peer.on("close", () => {
-        console.log("Viewer Peer closed");
-        peer.destroy();
-        cleanupCallback();
-      });
+          peer.on("stream", (stream) => {
+            // display remote stream
+              console.log("peer on stream", stream)
+              this.$refs.viewer.srcObject = stream;
+          });
 
-      peer.on("error", (err) => {
-          console.log(err)
-        console.log("handle error gracefully");
-      });
+          peer.on("track", (track, stream) => {
+            console.log("peer on track");
+          });
 
-      const updatedOffer = {
-        ...incomingOffer,
-        sdp: `${incomingOffer.sdp}\n`,
-      };
-      peer.signal(updatedOffer);
-    },
+          peer.on("connect", () => {
+            console.log("peer on connect");
+          });
 
-    initializeSignalOfferChannel() {
-      window.Echo.private(`stream-signal-channel.${this.auth_user_id}`).listen(
-        "StreamOffer",
-        ({ data }) => {
-          console.log("Signal Offer from private channel");
-          this.broadcasterId = data.broadcaster;
-          this.createViewerPeer(data.offer, data.broadcaster);
+          peer.on("close", () => {
+            console.log("peer on close");
+            peer.destroy();
+            cleanupCallback();
+          });
+
+          peer.on("error", (err) => {
+              console.log(err)
+            console.log("peer on error");
+          });
+
+          const updatedOffer = {
+            ...incomingOffer,
+            sdp: `${incomingOffer.sdp}\n`,
+          };
+          peer.signal(updatedOffer);
+        },
+        initializeSignalOfferChannel() {
+          window.Echo.private(`stream-signal-channel.${this.auth_user_id}`).listen(
+            "StreamOffer",
+            ({ data }) => {
+              console.log("Signal Offer from private channel");
+                console.log(data);
+              this.broadcasterId = data.broadcaster;
+              this.createViewerPeer(data.offer, data.broadcaster);
+              this.loading = false;
+              this.participated = true;
+            }
+          );
+        },
+        removeBroadcastVideo() {
+          console.log("removingBroadcast Video");
+          alert("La diffusion est terminée");
+          const viewer = this.$refs.viewer;
+            console.log(viewer)
+          const tracks = this.$refs.viewer.srcObject.getTracks();
+
+          tracks.forEach((track) => {
+            track.stop();
+          });
+          this.$refs.viewer.srcObject = null;
+          this.participated = false;
+        },
+        fullScreen() {
+            document.getElementById('viewer').requestFullscreen();
         }
-      );
-    },
-
-    removeBroadcastVideo() {
-      console.log("removingBroadcast Video");
-      alert("Livestream ended by broadcaster");
-      const tracks = this.$refs.viewer.srcObject.getTracks();
-      tracks.forEach((track) => {
-        track.stop();
-      });
-      this.$refs.viewer.srcObject = null;
-    },
   },
 };
 </script>

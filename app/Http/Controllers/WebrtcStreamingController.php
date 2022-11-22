@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\LiveStartEvent;
 use App\Events\StreamAnswer;
 use App\Events\StreamOffer;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ class WebrtcStreamingController extends Controller
     {
         // The view for the consumer(viewer). They join with a link that bears the streamId
         // initiated by a specific broadcaster.
-        return view('video-broadcast', ['type' => 'consumer', 'streamId' => $streamId, 'id' => Auth::id()]);
+        return view('viewer', ['type' => 'consumer', 'streamId' => $streamId, 'id' => Auth::id()]);
     }
 
     public function makeStreamOffer(Request $request)
@@ -39,5 +40,14 @@ class WebrtcStreamingController extends Controller
         $data['broadcaster'] = $request->broadcaster;
         $data['answer'] = $request->answer;
         event(new StreamAnswer($data));
+    }
+
+    public function liveNotify(Request $request)
+    {
+        event(new LiveStartEvent(1));
+
+        return response()->json([
+            'message' => 'live notify success'
+        ]);
     }
 }

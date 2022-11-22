@@ -34,7 +34,7 @@
     <!-- Navigation-->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
         <div class="container">
-        <a class="navbar-brand" href="#page-top">Live Streaming</a>
+        <a class="navbar-brand" href="{{ route('home') }}">Live Streaming</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
                 Menu
                 <i class="fas fa-bars ms-1"></i>
@@ -59,14 +59,16 @@
             <ul class="navbar-nav ml-auto">
                 <!-- Authentication Links -->
                 @guest
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
+                    <li class="nav-item dropdown">
+                        <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button"
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                            Mon compte
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="{{ route('login') }}" ><i class="fa fa-user"></i> Connexion</a>
+                            <a class="dropdown-item" href="{{ route('register') }}" ><i class="fa fa-user-plus"></i> S'inscrire</a>
+                        </div>
                     </li>
-                    {{-- @if (Route::has('register'))
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
-                        </li>
-                    @endif --}}
                 @else
                     <li class="nav-item dropdown">
                         <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button"
@@ -76,7 +78,11 @@
 
                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
                             <a class="dropdown-item" href="#" ><i class="fa fa-user"></i> Mon compte</a>
-                            <a class="dropdown-item" href="#" ><i class="fa fa-cog"></i> Dashboard</a>
+                            @if (Auth::user()->type === 1)
+                                <a class="dropdown-item" href="{{ route('live.home') }}" ><i class="fa fa-cog"></i> Dashboard</a>
+                            @else
+                                <a class="dropdown-item" href="streaming/112acde2" ><i class="fa fa-video-camera"></i> Rejoint le live</a>
+                            @endif
                             <hr>
                             <a class="dropdown-item bg-danger text-light" href="{{ route('logout') }}"
                                onclick="event.preventDefault();document.getElementById('logout-form').submit();">
@@ -114,6 +120,6 @@
         </div>
     </footer>
 </div>
-
+@yield('script')
 </body>
 </html>
