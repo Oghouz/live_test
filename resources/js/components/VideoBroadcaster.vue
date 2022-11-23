@@ -50,7 +50,7 @@
             <div class="col-sm-8">
                 <div class="card">
                     <div class="card-body">
-                        <video src="https://localhost/live_test/public/video/test.mp4" ref="broadcaster" id="originVideo" playsinline controls width="640" height="480"></video>
+                        <video src="https://live.zilwa.fr/video/test.mp4" ref="broadcaster" id="originVideo" playsinline controls width="640" height="480"></video>
                     </div>
                 </div>
             </div>
@@ -271,9 +271,7 @@ export default {
             window.Echo.private(`stream-signal-channel.${this.auth_user_id}`).listen(
                 "StreamAnswer",
                 ({ data }) => {
-                    console.log(data)
                     console.log("Signal Answer from private channel");
-
                     if (data.answer.renegotiate) {
                         console.log("renegotating");
                     }
