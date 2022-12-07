@@ -45,11 +45,18 @@ export const getPermissions = (shareScreen) => {
                 });
         } else {
             navigator.mediaDevices
-                .getUserMedia({ video: true, audio: true })
+                .getUserMedia({
+                    video: {
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    },
+                    audio: true }
+                )
                 .then(stream => {
                     resolve(stream);
                 })
                 .catch(err => {
+                    alert('Aucune caméra n\'a été détectée')
                     reject(err);
                     //   throw new Error(`Unable to fetch stream ${err}`);
                 });

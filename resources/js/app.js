@@ -6,6 +6,7 @@
 
 require("./bootstrap");
 
+import Vue from 'vue'
 window.Vue = require("vue");
 
 /**
@@ -30,6 +31,7 @@ Vue.component("agora-chat", require("./components/AgoraChat.vue").default);
 Vue.component("broadcaster", require("./components/Broadcaster.vue").default);
 Vue.component("video-broadcaster", require("./components/VideoBroadcaster.vue").default);
 Vue.component("viewer", require("./components/Viewer.vue").default);
+Vue.component("chat", require("./components/Chat.vue").default);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to

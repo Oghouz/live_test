@@ -1,7 +1,7 @@
 <template>
-  <div class="container">
+  <div class="container-fluid">
     <div class="row">
-      <div class="col-md-8 offset-md-2">
+      <div class="col-md-8">
           <span class="badge bg-success"v-if="liveStarted">Le live est commerncer</span>
 <!--          <span class="badge bg-secondary" v-else>Pas de live pour le moment.</span>-->
           <br>
@@ -17,7 +17,6 @@
               <i class="fa fa-th"></i>
               Plain écran
           </button>
-
       </div>
     </div>
       <div class="row mt-2">
@@ -28,7 +27,9 @@
                   </div>
               </div>
           </div>
-          <div class="col-4"></div>
+          <div class="col-4">
+              <chat></chat>
+          </div>
       </div>
   </div>
 </template>
@@ -179,4 +180,5 @@ export default {
 </script>
 
 <style scoped>
+
 </style>

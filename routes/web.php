@@ -22,8 +22,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/live/{token}', 'App\Http\Controllers\WebrtcStreamingController@startLive');
+
 
 Route::group(['middleware' => ['auth']], function () {
+
 
     Route::get('/video-chat', function () {
         // fetch all users apart from the authenticated user
@@ -43,6 +46,8 @@ Route::group(['middleware' => ['auth']], function () {
 
     // WebRTC Group Call Endpoints
     // Initiate Stream, Get a shareable broadcast link
+    Route::get('/test', 'App\Http\Controllers\HomeController@test');
+
     Route::get('/streaming', 'App\Http\Controllers\WebrtcStreamingController@index');
     Route::get('/streaming/{streamId}', 'App\Http\Controllers\WebrtcStreamingController@consumer');
     Route::post('/stream-offer', 'App\Http\Controllers\WebrtcStreamingController@makeStreamOffer');

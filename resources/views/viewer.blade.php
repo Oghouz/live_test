@@ -4,7 +4,7 @@
     <div class="container-fluid" style="margin-top: 150px; padding-bottom: 350px">
         <div class="row">
             <div class="col">
-                <div class="text-center">
+                <div>
                     <viewer stream_id="{{ $streamId }}"
                             home_url="{{ env('APP_URL') }}"
                             :auth_user_id="{{ $id }}"

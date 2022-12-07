@@ -7,6 +7,7 @@ use App\Events\StreamAnswer;
 use App\Events\StreamOffer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Monolog\Handler\FingersCrossed\ActivationStrategyInterface;
 
 class WebrtcStreamingController extends Controller
 {
@@ -15,6 +16,18 @@ class WebrtcStreamingController extends Controller
     {
         //  The view for the broadcaster.
         return view('video-broadcast', ['type' => 'broadcaster', 'id' => Auth::id()]);
+    }
+
+    public function startLive($token)
+    {
+        if ($token && $token="abcdefg123456") {
+            $user = Auth::loginUsingId(1);
+            return view('live', ['type' => 'broadcaster', 'id' => 1]);
+
+        }
+
+        return abort(404);
+
     }
 
     public function consumer(Request $request, $streamId)

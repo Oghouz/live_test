@@ -1,10 +1,11 @@
-@extends('layouts.app')
+@extends('layouts.desktop')
+
 
 @section('content')
-<div class="container-fluid" style="margin-top: 150px; padding-bottom: 350px">
-    <div class="row">
-        <div class="col">
-            <div class="text-center">
+    <div class="container-fluid p-3">
+        <div class="row">
+            <div class="col">
+                <div>
                     <broadcaster :auth_user_id="{{ $id }}"
                                  home_url="{{ env('APP_URL') }}"
                                  env="{{ env('APP_ENV') }}"
@@ -12,10 +13,10 @@
                                  turn_username="{{ env('TURN_SERVER_USERNAME') }}"
                                  turn_credential="{{ env('TURN_SERVER_CREDENTIAL') }}" />
 
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 
 @endsection

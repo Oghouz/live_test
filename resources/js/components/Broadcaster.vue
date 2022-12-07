@@ -75,7 +75,9 @@
 
 <script>
 import Peer from "simple-peer";
-import { getPermissions } from "../helpers";
+import { getPermissions } from "../helpers"
+import MultiStreamsMixer  from "multistreamsmixer"
+
 export default {
     name: "Broadcaster",
     props: [
@@ -89,8 +91,12 @@ export default {
     ],
     data() {
         return {
+            peer : null,
+            mixer: null,
             onLive: false,
             stream: null,
+            cameraStream: null,
+            screenStream: null,
             mutedAudio: false,
             audioMutedClass: "fa fa-microphone-slash",
             mutedVideo: false,
@@ -107,7 +113,6 @@ export default {
             durationSecond: '00'
         };
     },
-
     computed: {
         streamId() {
             // you can improve streamId generation code. As long as we include the
@@ -115,23 +120,25 @@ export default {
             // the current code just generates a fixed streaming link for a particular user.
             return `${this.auth_user_id}12acde2`;
         },
-
         streamLink() {
             // just a quick fix. can be improved by setting the app_url
             return `https://live.zilwa.fr/streaming/${this.streamId}`;
         },
     },
-
     methods: {
+        async prepareStream() {
+            this.cameraStream = await getPermissions(this.screenShared);
+            this.mixer = new MultiStreamsMixer([this.cameraStream])
+
+            this.mixer.frameInterval = 1;
+            this.mixer.startDrawingFrames();
+
+            this.stream = this.mixer.getMixedStream()
+            this.$refs.broadcaster.srcObject = this.stream;
+        },
         async startStream() {
             this.loading = true;
-            // this.stream = await navigator.mediaDevices.getUserMedia({
-            //     video: true,
-            //     audio: true,
-            // });
-            this.stream = await getPermissions(this.screenShared);
-            this.$refs.broadcaster.srcObject = this.stream;
-
+            await this.prepareStream();
             this.initializeStreamingChannel();
             this.initializeSignalAnswerChannel(); // a private channel where the broadcaster listens to incoming signalling answer
             this.isVisibleLink = true;
@@ -141,17 +148,36 @@ export default {
             setInterval(this.setTime, 1000);
         },
         async shareScreen() {
+            this.screenShared = !this.screenShared
             if (this.screenShared) {
-                this.screenShared = false;
+                this.screenStream = await getPermissions(true);
+                this.screenStream.fullcanvas = true;
+                this.screenStream.width = screen.width;
+                this.screenStream.height = screen.height;
+
+                this.cameraStream.width = parseInt((20 / 100) * this.screenStream.width);
+                this.cameraStream.height = parseInt((20 / 100) * this.screenStream.height);
+                this.cameraStream.top = this.screenStream.height - this.cameraStream.height;
+                this.cameraStream.left = this.screenStream.width - this.cameraStream.width;
+
+                this.mixer.frameInterval = 1;
+                this.mixer.startDrawingFrames();
+                this.mixer.appendStreams([this.screenStream])
+
+                console.log("screen shared")
             } else {
-                this.screenShared = true;
+                //this.cameraStream.fullcanvas = true;
+                this.cameraStream.width = screen.width;
+                this.cameraStream.height = screen.height;
+                this.cameraStream.top = 0
+                this.cameraStream.left = 0
+
+                this.mixer.frameInterval = 1;
+                this.mixer.startDrawingFrames();
+                this.mixer.resetVideoStreams([this.cameraStream])
+                console.log("screen share canceled")
             }
 
-            this.stream = await getPermissions(this.screenShared)
-            this.$refs.broadcaster.srcObject = this.stream;
-            this.initializeStreamingChannel();
-            this.initializeSignalAnswerChannel();
-            console.log("screen shared")
         },
         stopStream() {
             const videoElem = this.$refs.broadcaster;
@@ -165,11 +191,10 @@ export default {
             this.setLiveEndedTime();
         },
         peerCreator(stream, user, signalCallback) {
-            console.log("peerCreator",stream)
-            let peer;
+            //let peer;
             return {
                 create: () => {
-                    peer = new Peer({
+                    this.peer = new Peer({
                         initiator: true,
                         trickle: false,
                         stream: stream,
@@ -188,32 +213,32 @@ export default {
                     });
                 },
 
-                getPeer: () => peer,
+                getPeer: () => this.peer,
 
                 initEvents: () => {
-                    peer.on("signal", (data) => {
+                    this.peer.on("signal", (data) => {
                         // send offer over here.
                         console.log("peer on signal")
                         signalCallback(data, user);
                     });
 
-                    peer.on("stream", (stream) => {
+                    this.peer.on("stream", (stream) => {
                         console.log("peer on stream");
                     });
 
-                    peer.on("track", (track, stream) => {
+                    this.peer.on("track", (track, stream) => {
                         console.log("peer on track");
                     });
 
-                    peer.on("connect", () => {
+                    this.peer.on("connect", () => {
                         console.log("peer on connect");
                     });
 
-                    peer.on("close", () => {
+                    this.peer.on("close", () => {
                         console.log("peer on close");
                     });
 
-                    peer.on("error", (err) => {
+                    this.peer.on("error", (err) => {
                         console.log("peer on error");
                         console.log(err)
                     });
@@ -226,6 +251,7 @@ export default {
             );
 
             this.streamingPresenceChannel.here((users) => {
+                console.log("users:", users)
                 this.streamingUsers = users;
             });
 
@@ -363,7 +389,6 @@ export default {
     },
 };
 </script>
-
 <style scoped>
 video {
     width: 100%;
