@@ -28,7 +28,7 @@
               </div>
           </div>
           <div class="col-4">
-              <chat></chat>
+              <chat :auth_user="auth_user"></chat>
           </div>
       </div>
   </div>
@@ -40,6 +40,7 @@ export default {
   name: "Viewer",
   props: [
       "home_url",
+      "auth_user",
       "auth_user_id",
       "stream_id",
       "turn_url",

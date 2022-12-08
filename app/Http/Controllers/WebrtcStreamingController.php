@@ -34,7 +34,8 @@ class WebrtcStreamingController extends Controller
     {
         // The view for the consumer(viewer). They join with a link that bears the streamId
         // initiated by a specific broadcaster.
-        return view('viewer', ['type' => 'consumer', 'streamId' => $streamId, 'id' => Auth::id()]);
+        $user = Auth::user();
+        return view('viewer', ['type' => 'consumer', 'streamId' => $streamId, 'id' => Auth::id(), 'user' => $user]);
     }
 
     public function makeStreamOffer(Request $request)

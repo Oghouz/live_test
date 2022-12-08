@@ -17,8 +17,8 @@
                 </div>
                 <div class="chat-messages" id="chat-messages">
                     <div class="chat-box" v-for="msg in messages">
-                        <span class="chat-box-user">Admin: </span>
-                        <p class="chat-box-message ps-1">{{ msg.message}}</p>
+                        <span class="chat-box-user">{{ msg.name }}: </span>
+                        <p class="chat-box-message ps-1">{{ msg.message }}</p>
                     </div>
                 </div>
             </div>
@@ -34,7 +34,7 @@
 
 export default {
     name: 'chat',
-    props: [],
+    props: ['auth_user'],
     data() {
         return {
             notificationSound: null,
@@ -59,7 +59,7 @@ export default {
     methods: {
         sendMessage() {
             this.messages.push({
-                'name': 'Admin',
+                'name': this.username,
                 'message': this.text
             })
             const box = document.getElementById('chat-messages')
@@ -67,13 +67,13 @@ export default {
             if (this.notificationSoundEnable) {
                 this.notificationSound.play();
             }
-            this.$emit('chatevent', {
-                user: 'Admin',
-                message: this.text
-            })
+            // this.$emit('chatevent', {
+            //     user: this.auth_user.name,
+            //     message: this.text
+            // })
 
             axios.post('https://localhost/live_test/public/chat/messages', {
-                user: '',
+                user: this.auth_user.name,
                 message: this.text
             })
             .then((response) => {
@@ -87,6 +87,11 @@ export default {
             this.notificationSoundEnable = !this.notificationSoundEnable
         }
     },
+    computed: {
+        username() {
+            return JSON.parse(this.auth_user).name
+        }
+    }
 }
 
 </script>

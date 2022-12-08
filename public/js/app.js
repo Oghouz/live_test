@@ -842,7 +842,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: 'chat',
-  props: [],
+  props: ['auth_user'],
   data: function data() {
     return {
       notificationSound: null,
@@ -867,7 +867,7 @@ __webpack_require__.r(__webpack_exports__);
     sendMessage: function sendMessage() {
       var _this2 = this;
       this.messages.push({
-        'name': 'Admin',
+        'name': this.username,
         'message': this.text
       });
       var box = document.getElementById('chat-messages');
@@ -875,12 +875,13 @@ __webpack_require__.r(__webpack_exports__);
       if (this.notificationSoundEnable) {
         this.notificationSound.play();
       }
-      this.$emit('chatevent', {
-        user: 'Admin',
-        message: this.text
-      });
+      // this.$emit('chatevent', {
+      //     user: this.auth_user.name,
+      //     message: this.text
+      // })
+
       axios.post('https://localhost/live_test/public/chat/messages', {
-        user: '',
+        user: this.auth_user.name,
         message: this.text
       }).then(function (response) {
         console.log("axios post response: ", response);
@@ -890,6 +891,11 @@ __webpack_require__.r(__webpack_exports__);
     },
     enableNotificationSound: function enableNotificationSound() {
       this.notificationSoundEnable = !this.notificationSoundEnable;
+    }
+  },
+  computed: {
+    username: function username() {
+      return JSON.parse(this.auth_user).name;
     }
   }
 });
@@ -1760,7 +1766,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "Viewer",
-  props: ["home_url", "auth_user_id", "stream_id", "turn_url", "turn_username", "turn_credential"],
+  props: ["home_url", "auth_user", "auth_user_id", "stream_id", "turn_url", "turn_username", "turn_credential"],
   data: function data() {
     return {
       loading: false,
@@ -56658,7 +56664,9 @@ var render = function () {
           { staticClass: "chat-messages", attrs: { id: "chat-messages" } },
           _vm._l(_vm.messages, function (msg) {
             return _c("div", { staticClass: "chat-box" }, [
-              _c("span", { staticClass: "chat-box-user" }, [_vm._v("Admin: ")]),
+              _c("span", { staticClass: "chat-box-user" }, [
+                _vm._v(_vm._s(msg.name) + ": "),
+              ]),
               _vm._v(" "),
               _c("p", { staticClass: "chat-box-message ps-1" }, [
                 _vm._v(_vm._s(msg.message)),
@@ -57285,7 +57293,12 @@ var render = function () {
         ]),
       ]),
       _vm._v(" "),
-      _c("div", { staticClass: "col-4" }, [_c("chat")], 1),
+      _c(
+        "div",
+        { staticClass: "col-4" },
+        [_c("chat", { attrs: { auth_user: _vm.auth_user } })],
+        1
+      ),
     ]),
   ])
 }
