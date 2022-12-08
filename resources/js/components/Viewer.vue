@@ -174,7 +174,7 @@ export default {
         },
         fullScreen() {
             document.getElementById('viewer').requestFullscreen();
-        }
+        },
   },
 };
 </script>

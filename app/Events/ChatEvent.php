@@ -34,6 +34,6 @@ class ChatEvent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return  new PrivateChannel('stream-signal-channel.' . $this->user->id);
+        return  new PrivateChannel('chat');
     }
 }

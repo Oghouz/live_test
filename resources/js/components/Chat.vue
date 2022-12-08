@@ -47,6 +47,14 @@ export default {
     },
     mounted() {
         this.notificationSound = new Audio("../../public/sounds/notification.mp3")
+        window.Echo.private('chat')
+        .listen('ChatEvent', (e) => {
+            console.log("chatEvent response: ", e)
+            this.messages.push({
+                name: e.user.name,
+                message: e.message
+            })
+        })
     },
     methods: {
         sendMessage() {
@@ -54,12 +62,26 @@ export default {
                 'name': 'Admin',
                 'message': this.text
             })
-            this.text = '';
             const box = document.getElementById('chat-messages')
             box.scrollTop = box.scrollHeight
             if (this.notificationSoundEnable) {
                 this.notificationSound.play();
             }
+            this.$emit('chatevent', {
+                user: 'Admin',
+                message: this.text
+            })
+
+            axios.post('https://localhost/live_test/public/chat/messages', {
+                user: '',
+                message: this.text
+            })
+            .then((response) => {
+                console.log("axios post response: ", response)
+                console.log("this.text: ", this.text)
+            })
+            this.text = '';
+
         },
         enableNotificationSound() {
             this.notificationSoundEnable = !this.notificationSoundEnable

@@ -54,6 +54,10 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/stream-answer', 'App\Http\Controllers\WebrtcStreamingController@makeStreamAnswer');
     Route::post('/notify', 'App\Http\Controllers\WebrtcStreamingController@liveNotify');
 
+    Route::prefix('chat')->group(function () {
+        Route::post('messages', [\App\Http\Controllers\ChatController::class, 'sendMessage']);
+    });
+
     Route::prefix('dashboard')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('live.home');
         Route::get('/create', [DashboardController::class, 'create'])->name('live.create');

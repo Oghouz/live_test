@@ -87,4 +87,14 @@ class ChatController extends Controller
     {
         //
     }
+
+    public function sendMessage(Request $request)
+    {
+        $user = $request->user();
+        $message = $request->get('message');
+
+        broadcast(new ChatEvent($user, $message))->toOthers();
+
+        return response(['status' => 'Message '.$message.' sent!']);
+    }
 }

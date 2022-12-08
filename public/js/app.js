@@ -853,20 +853,40 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   mounted: function mounted() {
+    var _this = this;
     this.notificationSound = new Audio("../../public/sounds/notification.mp3");
+    window.Echo["private"]('chat').listen('ChatEvent', function (e) {
+      console.log("chatEvent response: ", e);
+      _this.messages.push({
+        name: e.user.name,
+        message: e.message
+      });
+    });
   },
   methods: {
     sendMessage: function sendMessage() {
+      var _this2 = this;
       this.messages.push({
         'name': 'Admin',
         'message': this.text
       });
-      this.text = '';
       var box = document.getElementById('chat-messages');
       box.scrollTop = box.scrollHeight;
       if (this.notificationSoundEnable) {
         this.notificationSound.play();
       }
+      this.$emit('chatevent', {
+        user: 'Admin',
+        message: this.text
+      });
+      axios.post('https://localhost/live_test/public/chat/messages', {
+        user: '',
+        message: this.text
+      }).then(function (response) {
+        console.log("axios post response: ", response);
+        console.log("this.text: ", _this2.text);
+      });
+      this.text = '';
     },
     enableNotificationSound: function enableNotificationSound() {
       this.notificationSoundEnable = !this.notificationSoundEnable;
