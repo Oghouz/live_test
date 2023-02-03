@@ -2,7 +2,7 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-md-8">
-          <span class="badge bg-success"v-if="liveStarted">Le live est commerncer</span>
+          <span class="badge bg-success" v-if="liveStarted">Le live est commerncer</span>
 <!--          <span class="badge bg-secondary" v-else>Pas de live pour le moment.</span>-->
           <br>
         <button class="btn btn-success" @click="joinBroadcast" :disabled="loading" v-show="!participated">
@@ -23,12 +23,12 @@
           <div class="col-8">
               <div class="card">
                   <div class="card-body">
-                      <video autoplay id="viewer" ref="viewer" width="640" height="480"></video>
+                      <video autoplay id="viewer" ref="viewer" style="width: 100%"></video>
                   </div>
               </div>
           </div>
           <div class="col-4">
-              <chat :auth_user="auth_user"></chat>
+              <chat v-if="participated" :auth_user="auth_user" :live_id="stream_id" :is_admin="false"></chat>
           </div>
       </div>
   </div>

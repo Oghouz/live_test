@@ -17,9 +17,15 @@ class CreateLiveTable extends Migration
             $table->id();
             $table->string('title');
             $table->mediumText('description')->nullable();
-            $table->integer('created_by');
+            $table->tinyInteger('type')->default(0);
+            $table->tinyInteger('status')->default(0);
+            $table->string('token')->nullable();
+            $table->boolean('chat')->default(false);
+            $table->boolean('onLive')->default(false);
+            $table->dateTime('schedule_at')->nullable();
             $table->dateTime('started_at')->nullable();
             $table->dateTime('ended_at')->nullable();
+            $table->integer('created_by');
             $table->timestamps();
         });
     }

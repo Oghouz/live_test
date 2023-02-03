@@ -21,13 +21,13 @@
 
     <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}" defer></script>
-
     @yield('scripts')
     <style>
         #mainNav {
             background-color: #000000bd;
         }
     </style>
+    @yield('style')
 </head>
 <body id="page-top">
 <div id="app">

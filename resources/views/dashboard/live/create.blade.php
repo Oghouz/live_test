@@ -11,17 +11,24 @@
                             Information pour créer un live en direct
                         </p>
                         <form class="forms-sample">
+                            @csrf
                             <div class="form-group">
-                                <label for="title">Titre</label>
-                                <input type="text" class="form-control" name="title" placeholder="Titre de votre live">
+                                <label for="title">Titre <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="title" placeholder="Titre de votre live" required="required">
                             </div>
                             <div class="form-group">
                                 <label for="description">Description</label>
-                                <textarea name="description" id="description" rows="10" class="form-control"></textarea>
+                                <textarea name="description" id="description" cols="30" rows="5" class="form-control"></textarea>
                             </div>
-                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                            <hr>
+                            <div class="form-group">
+                                <label for="title">Titre <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="title" placeholder="Titre de votre live" required="required">
+                            </div>
+
+
                             <button type="submit" class="btn btn-social-icon-text btn-twitter"><i class="ti-video-camera"></i>Créer</button>
-                            <button class="btn btn-light">Annuler</button>
+                            <button class="btn btn-danger">Annuler</button>
                         </form>
                     </div>
                 </div>

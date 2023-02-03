@@ -15,6 +15,7 @@
     <div class="row mt-4">
         <div class="col">
             <broadcaster :auth_user_id="{{ $id }}"
+                         auth_user="{{ $auth_user }}"
                          home_url="{{ env('APP_URL') }}"
                          env="{{ env('APP_ENV') }}"
                          live_id="{{ $live->id }}"

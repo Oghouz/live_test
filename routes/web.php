@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LiveController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -49,29 +50,17 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/test', 'App\Http\Controllers\HomeController@test');
 
     Route::get('/streaming', 'App\Http\Controllers\WebrtcStreamingController@index');
-    Route::get('/streaming/{streamId}', 'App\Http\Controllers\WebrtcStreamingController@consumer');
+    Route::get('/streaming/{streamId}/{token}', 'App\Http\Controllers\WebrtcStreamingController@consumer');
+    Route::get('/loading', 'App\Http\Controllers\WebrtcStreamingController@loadingLive')->name('live.loading');
     Route::post('/stream-offer', 'App\Http\Controllers\WebrtcStreamingController@makeStreamOffer');
     Route::post('/stream-answer', 'App\Http\Controllers\WebrtcStreamingController@makeStreamAnswer');
     Route::post('/notify', 'App\Http\Controllers\WebrtcStreamingController@liveNotify');
 
     Route::prefix('chat')->group(function () {
         Route::post('messages', [\App\Http\Controllers\ChatController::class, 'sendMessage']);
+        Route::post('/get/messages', [\App\Http\Controllers\ChatController::class, 'getMessages']);
     });
 
-    Route::prefix('dashboard')->group(function () {
-        Route::get('/', [DashboardController::class, 'index'])->name('live.home');
-        Route::get('/create', [DashboardController::class, 'create'])->name('live.create');
-        Route::get('/live/{live_id}', [DashboardController::class, 'live'])->name('live.streaming');
-        Route::post('/live/set/started', [DashboardController::class, 'liveStarted'])->name('live.started');
-        Route::post('/live/set/ended', [DashboardController::class, 'liveEnded'])->name('live.ended');
-        Route::post('/store', [DashboardController::class, 'store'])->name('live.store');
-        Route::get('/playback', [DashboardController::class, 'playback'])->name('live.playback');
-        Route::get('/video-streaming', [DashboardController::class, 'videoStreaming'])->name('live.video-streaming');
-
-        Route::get('/statistic', [DashboardController::class, 'statistic'])->name('dashboard.statistic');
-        Route::get('/calendar', [DashboardController::class, 'calendar'])->name('dashboard.calendar');
-        Route::get('/users', [DashboardController::class, 'users'])->name('dashboard.users');
-    });
 });
 
 /**
@@ -85,5 +74,7 @@ Route::group(['middleware' => ['auth']], function () {
 Auth::routes();
 //Auth::routes(['register' => false]);
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+require __DIR__ . '/dashboard.php';
 
 

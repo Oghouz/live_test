@@ -15,9 +15,9 @@
             </a>
             <div class="collapse" id="ui-basic">
                 <ul class="nav flex-column sub-menu">
-                    <li class="nav-item"> <a class="nav-link" href="{{ route('live.create') }}">Live Streaming</a></li>
-                    <li class="nav-item"> <a class="nav-link" href="{{ route('live.video-streaming') }}">Video Streaming</a></li>
-                    <li class="nav-item"> <a class="nav-link" href="{{ route('live.playback') }}">Playback</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="{{ route('dashboard.live.create') }}">Live Streaming</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="{{ route('dashboard.live.video-streaming') }}">Video Streaming</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="{{ route('dashboard.live.playback') }}">Playback</a></li>
                     <li class="nav-item"> <a class="nav-link" href="#">Planifier un Live</a></li>
                 </ul>
             </div>

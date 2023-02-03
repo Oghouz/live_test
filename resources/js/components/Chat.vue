@@ -34,19 +34,20 @@
 
 export default {
     name: 'chat',
-    props: ['auth_user'],
+    props: ['auth_user', 'live_id', 'is_admin'],
     data() {
         return {
             notificationSound: null,
             notificationSoundEnable: true,
             currentUser: null,
             text: '',
-            messages: []
+            messages: [],
+            home_url: 'https://localhost/live_test/public/',
 
         }
     },
     mounted() {
-        this.notificationSound = new Audio("../../public/sounds/notification.mp3")
+        this.notificationSound = new Audio("https://localhost/live_test/public/sounds/notification.mp3")
         window.Echo.private('chat')
         .listen('ChatEvent', (e) => {
             console.log("chatEvent response: ", e)
@@ -55,6 +56,7 @@ export default {
                 message: e.message
             })
         })
+        this.initializeMessages()
     },
     methods: {
         sendMessage() {
@@ -72,9 +74,11 @@ export default {
             //     message: this.text
             // })
 
-            axios.post('https://localhost/live_test/public/chat/messages', {
-                user: this.auth_user.name,
-                message: this.text
+            axios.post(this.chatUrl+'messages', {
+                live_id: this.live_id,
+                user_id: this.userId,
+                username: this.username,
+                message: this.text,
             })
             .then((response) => {
                 console.log("axios post response: ", response)
@@ -83,13 +87,37 @@ export default {
             this.text = '';
 
         },
+        async initializeMessages() {
+            axios.post(this.chatUrl + 'get/messages', {
+                live_id: this.live_id,
+                user_id: this.userId
+            })
+            .then((response) => {
+                response.data.forEach((item, index) => {
+                    this.messages.push({
+                        name: item.sender,
+                        message: item.message
+                    })
+                })
+            })
+        },
         enableNotificationSound() {
             this.notificationSoundEnable = !this.notificationSoundEnable
         }
     },
     computed: {
+        chatUrl() {
+          if (this.is_admin) {
+              return this.home_url + 'dashboard/chat/'
+          } else {
+              return this.home_url + 'chat/'
+          }
+        },
         username() {
             return JSON.parse(this.auth_user).name
+        },
+        userId() {
+            return JSON.parse(this.auth_user).id
         }
     }
 }
@@ -105,7 +133,7 @@ export default {
     height: 350px;
 }
 .chat-box {
-    background-color: #f1f1f1;
+    background-color: #f6f6f6;
     padding: 5px 10px;
     border-radius: 10px;
     font-size: 12px;

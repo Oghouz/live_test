@@ -59,14 +59,24 @@
                 </div>
             </div>
             <div class="col-sm-4">
-                <div class="card">
-                    <div class="card-body">
-                        <p class="card-title small-text">Les participants:</p>
-                        <ul class="list-group" v-for="user in streamingUsers">
-                            <li class="list-group-item"><i class="mdi mdi-account"></i> {{ user.name }}</li>
-                        </ul>
+                <div class="row pb-3">
+                    <div class="col">
+                        <chat :auth_user="auth_user" :live_id="live_id" :is_admin="true"></chat>
                     </div>
-
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="viewer">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p class="card-title small-text">Les participants:</p>
+                                    <ul class="list-group" v-for="user in streamingUsers">
+                                        <li class="list-group-item"><i class="mdi mdi-account"></i> {{ user.name }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -82,6 +92,7 @@ export default {
     name: "Broadcaster",
     props: [
         "home_url",
+        "auth_user",
         "auth_user_id",
         "env",
         "turn_url",
@@ -118,7 +129,9 @@ export default {
             // you can improve streamId generation code. As long as we include the
             // broadcaster's user id, we are assured of getting unique streamiing link everytime.
             // the current code just generates a fixed streaming link for a particular user.
-            return `${this.auth_user_id}12acde2`;
+            // return `${this.auth_user_id}12acde2`;
+            //return `${this.auth_user_id}`;
+            return this.live_id;
         },
         streamLink() {
             // just a quick fix. can be improved by setting the app_url
@@ -393,5 +406,8 @@ export default {
 video {
     width: 100%;
     height: auto;
+}
+.viewer {
+    margin-top: 320px;
 }
 </style>

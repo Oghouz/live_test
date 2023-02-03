@@ -46,11 +46,8 @@ export const getPermissions = (shareScreen) => {
         } else {
             navigator.mediaDevices
                 .getUserMedia({
-                    video: {
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
-                    },
-                    audio: true }
+                    video: true,
+                    audio: true}
                 )
                 .then(stream => {
                     resolve(stream);

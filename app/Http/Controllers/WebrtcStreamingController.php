@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\LiveStartEvent;
 use App\Events\StreamAnswer;
 use App\Events\StreamOffer;
+use App\Models\Live;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Monolog\Handler\FingersCrossed\ActivationStrategyInterface;
@@ -18,24 +19,41 @@ class WebrtcStreamingController extends Controller
         return view('video-broadcast', ['type' => 'broadcaster', 'id' => Auth::id()]);
     }
 
-    public function startLive($token)
-    {
-        if ($token && $token="abcdefg123456") {
-            $user = Auth::loginUsingId(1);
-            return view('live', ['type' => 'broadcaster', 'id' => 1]);
+//    public function startLive($token)
+//    {
+//        if ($token && $token="abcdefg123456") {
+//            $user = Auth::loginUsingId(1);
+//            return view('live', ['type' => 'broadcaster', 'id' => 1]);
+//
+//        }
+//
+//        return abort(404);
+//
+//    }
 
-        }
-
-        return abort(404);
-
-    }
-
-    public function consumer(Request $request, $streamId)
+    public function consumer(Request $request, $streamId, $token)
     {
         // The view for the consumer(viewer). They join with a link that bears the streamId
         // initiated by a specific broadcaster.
         $user = Auth::user();
-        return view('viewer', ['type' => 'consumer', 'streamId' => $streamId, 'id' => Auth::id(), 'user' => $user]);
+        $live = Live::find($streamId);
+        if (!$live || $live->token !== $token) {
+            return abort(403);
+        }
+
+        if ($live->onLive) {
+
+            return view('viewer', ['type' => 'consumer', 'streamId' => $streamId, 'id' => Auth::id(), 'user' => $user, 'live' => $live]);
+        }
+
+        //return view('loadingLive', ['live' => $live]);
+        return view('waitLive', ['live' => $live]);
+
+    }
+
+    public function loadingLive()
+    {
+        return view('loadingLive');
     }
 
     public function makeStreamOffer(Request $request)

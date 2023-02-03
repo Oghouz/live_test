@@ -6,11 +6,11 @@
             </button>
         </div>
         <div>
-            <a class="navbar-brand brand-logo" href="{{ url('dashboard') }}">
+            <a class="navbar-brand brand-logo" href="{{ route('dashboard.home') }}">
                 <span>LIVE ADMIN</span>
                 <!--            <img src="images/logo.svg" alt="logo" />-->
             </a>
-            <a class="navbar-brand brand-logo-mini" href="{{ url('dashboard') }}">
+            <a class="navbar-brand brand-logo-mini" href="{{ route('dashboard.home') }}">
                 <span>LIVE ADMIN</span>
                 <!--            <img src="images/logo-mini.svg" alt="logo" />-->
             </a>
@@ -129,7 +129,12 @@
                     <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-message-text-outline text-primary me-2"></i> Messages</a>
                     <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Activités</a>
                     <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-help-circle-outline text-primary me-2"></i> FAQ</a>
-                    <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Déconnexion</a>
+                    <a class="dropdown-item" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
+                        <i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Déconnexion
+                    </a>
+                    <form id="logout-form" action="{{ route('dashboard.logout') }}" method="POST" class="d-none">
+                        @csrf
+                    </form>
                 </div>
             </li>
         </ul>

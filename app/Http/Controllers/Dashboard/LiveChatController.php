@@ -1,14 +1,16 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Dashboard;
 
 use App\Events\ChatEvent;
+use App\Http\Controllers\Controller;
 use App\Models\ChatMessage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class ChatController extends Controller
+class LiveChatController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -31,12 +33,14 @@ class ChatController extends Controller
     }
 
     /**
-     * @param Request $request
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
-        $user = $request->user();
+        $user = Auth::guard('admin')->user();
         $message = $request->message();
 
 //        DB::table('chat_messages')->insert([]);
@@ -94,7 +98,7 @@ class ChatController extends Controller
 
     public function sendMessage(Request $request)
     {
-        $user = $request->user();
+        $user = Auth::guard('admin')->user();
         $liveId = $request->get('live_id');
         $userId = $request->get('user_id');
         $sender = $request->get('username');
@@ -117,9 +121,7 @@ class ChatController extends Controller
 
     public function getMessages(Request $request)
     {
-        $user = $request->user();
         $liveId = $request->get('live_id');
-
         $messages = ChatMessage::where('live_id', $liveId)->get();
 
         return response()->json($messages);
