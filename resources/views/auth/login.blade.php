@@ -1,15 +1,32 @@
 @extends('layouts.wait_live_layout')
 
+@section('style')
+    <style>
+        .card {
+            background-color: rgba(255, 255, 255, 0.44);
+        }
+        .card-header {
+            border: none;
+        }
+        .login-title {
+            font-size: 21px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+@endsection
 @section('content')
     <div class="container" style="margin-top: 250px; padding-bottom: 300px">
         <div class="row justify-content-center">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="card">
-                    <div class="card-header">Connexion</div>
+                    <div class="card-header">
+                        <p class="login-title mb-0">Connexion</p>
+                    </div>
                     <div class="card-body">
                         <form method="POST" action="{{ route('login') }}">
                             @csrf
-                            <div class="form-group row">
+                            <div class="form-group row mb-2">
                                 <label for="email" class="col-md-4 col-form-label text-md-right">Adresse email</label>
                                 <div class="col-md-6">
                                     <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
@@ -33,27 +50,12 @@
                                 </div>
                             </div>
 
-                            <div class="form-group row">
-                                <div class="col-md-6 offset-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="remember">
-                                            souviens-toi de moi
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div class="form-group row mb-0">
+                            <div class="form-group row mb-0 mt-2">
                                 <div class="col-md-8 offset-md-4">
-                                    <button type="submit" class="btn btn-info">
+                                    <button type="submit" class="btn btn-success">
                                         Se connecter
                                     </button>
-                                    @if (Route::has('password.request'))
-                                        <a class="btn btn-link" href="{{ route('password.request') }}">
-                                            Mot de passe oublié?
-                                        </a>
-                                    @endif
                                 </div>
                             </div>
                         </form>

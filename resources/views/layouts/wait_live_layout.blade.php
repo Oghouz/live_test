@@ -145,14 +145,8 @@
 </head>
 <body id="page-top">
 <div id="app">
-    <!-- Navigation-->
-
-    <!-- Content -->
-    <div class="context">
-        @yield('content', 'Default Content')
-    </div>
-
-    <div class="area" >
+    <!-- Animated background -->
+    <div class="area">
         <ul class="circles">
             <li></li>
             <li></li>
@@ -166,6 +160,11 @@
             <li></li>
         </ul>
     </div >
+
+    <!-- Content -->
+    <div class="context">
+        @yield('content', 'Default Content')
+    </div>
 
 </div>
 @yield('script')
