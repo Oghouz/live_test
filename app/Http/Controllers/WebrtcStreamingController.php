@@ -8,6 +8,7 @@ use App\Events\StreamOffer;
 use App\Models\Live;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Monolog\Handler\FingersCrossed\ActivationStrategyInterface;
 
 class WebrtcStreamingController extends Controller

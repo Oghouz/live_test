@@ -1830,7 +1830,8 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
       participated: false,
       streamingPresenceChannel: null,
       broadcasterPeer: null,
-      broadcasterId: null
+      broadcasterId: null,
+      testData: 'default value'
     };
   },
   methods: {
@@ -1841,6 +1842,9 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
     },
     initializeStreamingChannel: function initializeStreamingChannel() {
       this.streamingPresenceChannel = window.Echo.join("streaming-channel.".concat(this.stream_id));
+      this.streamingPresenceChannel.error(function (error) {
+        console.log("Error: ", error);
+      });
     },
     createViewerPeer: function createViewerPeer(incomingOffer, broadcaster) {
       var peer = new (simple_peer__WEBPACK_IMPORTED_MODULE_0___default())({
@@ -2033,6 +2037,12 @@ window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 window.Pusher = __webpack_require__(/*! pusher-js */ "./node_modules/pusher-js/dist/web/pusher.js");
 window.Echo = new laravel_echo__WEBPACK_IMPORTED_MODULE_0__["default"]({
   authEndpoint: 'https://localhost/live_test/public/broadcasting/auth',
+  // authEndpoint: 'https://localhost/live_test/public/pusher/auth',
+  auth: {
+    headers: {
+      'X-CSRF-TOKEN': '{{ csrf_token() }}'
+    }
+  },
   broadcaster: "pusher",
   key: "72df0eb7f9ab196ad397",
   cluster: "eu",

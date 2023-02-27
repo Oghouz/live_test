@@ -25,6 +25,8 @@ Route::get('/', function () {
 
 Route::get('/live/{token}', 'App\Http\Controllers\WebrtcStreamingController@startLive');
 
+Route::post('/pusher/auth', 'App\Http\Controllers\PusherController@pusherAuth');
+
 
 Route::group(['middleware' => ['auth']], function () {
 

@@ -33,6 +33,12 @@ import Echo from "laravel-echo";
 window.Pusher = require("pusher-js");
 window.Echo = new Echo({
     authEndpoint: 'https://localhost/live_test/public/broadcasting/auth',
+    // authEndpoint: 'https://localhost/live_test/public/pusher/auth',
+    auth: {
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+        }
+    },
     broadcaster: "pusher",
     key: process.env.MIX_PUSHER_APP_KEY,
     cluster: process.env.MIX_PUSHER_APP_CLUSTER,

@@ -34,7 +34,7 @@
     <!-- Navigation-->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
         <div class="container">
-        <a class="navbar-brand" href="{{ route('home') }}">Live Streaming</a>
+        <a class="navbar-brand" href="#">Live Streaming</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
                 Menu
                 <i class="fas fa-bars ms-1"></i>
@@ -79,7 +79,7 @@
                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
                             <a class="dropdown-item" href="#" ><i class="fa fa-user"></i> Mon compte</a>
                             @if (Auth::user()->type === 1)
-                                <a class="dropdown-item" href="{{ route('live.home') }}" ><i class="fa fa-cog"></i> Dashboard</a>
+                                <a class="dropdown-item" href="{{ route('dashboard.home') }}" ><i class="fa fa-cog"></i> Dashboard</a>
                             @else
                                 <a class="dropdown-item" href="streaming/112acde2" ><i class="fa fa-video-camera"></i> Rejoint le live</a>
                             @endif

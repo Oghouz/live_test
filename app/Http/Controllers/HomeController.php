@@ -27,6 +27,11 @@ class HomeController extends Controller
         return view('welcome');
     }
 
+    public function home()
+    {
+        return view('welcome');
+    }
+
     public function test()
     {
         $event = new TestEvent();
