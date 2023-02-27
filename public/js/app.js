@@ -687,6 +687,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     initializeStreamingChannel: function initializeStreamingChannel() {
       var _this5 = this;
       this.streamingPresenceChannel = window.Echo.join("streaming-channel.".concat(this.streamId));
+      this.streamingPresenceChannel.error(function (error) {
+        console.log(error);
+      });
       this.streamingPresenceChannel.here(function (users) {
         console.log("users:", users);
         _this5.streamingUsers = users;
@@ -1841,6 +1844,9 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
     },
     initializeStreamingChannel: function initializeStreamingChannel() {
       this.streamingPresenceChannel = window.Echo.join("streaming-channel.".concat(this.stream_id));
+      this.streamingPresenceChannel.error(function (error) {
+        console.log(error);
+      });
     },
     createViewerPeer: function createViewerPeer(incomingOffer, broadcaster) {
       var peer = new (simple_peer__WEBPACK_IMPORTED_MODULE_0___default())({

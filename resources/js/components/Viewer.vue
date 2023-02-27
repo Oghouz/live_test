@@ -67,6 +67,9 @@ export default {
           this.streamingPresenceChannel = window.Echo.join(
             `streaming-channel.${this.stream_id}`
           );
+          this.streamingPresenceChannel.error((error) => {
+              console.log(error)
+          })
         },
         createViewerPeer(incomingOffer, broadcaster) {
           const peer = new Peer({
