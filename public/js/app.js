@@ -687,6 +687,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     initializeStreamingChannel: function initializeStreamingChannel() {
       var _this5 = this;
       this.streamingPresenceChannel = window.Echo.join("streaming-channel.".concat(this.streamId));
+      this.streamingPresenceChannel.error(function (error) {
+        console.log(error);
+      });
       this.streamingPresenceChannel.here(function (users) {
         console.log("users:", users);
         _this5.streamingUsers = users;
@@ -1938,6 +1941,9 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
     fullScreen: function fullScreen() {
       document.getElementById('viewer').requestFullscreen();
     }
+  },
+  mounted: function mounted() {
+    //this.joinBroadcast()
   }
 });
 
@@ -8486,7 +8492,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\nvideo[data-v-5f697d13] {\n    width: 100%;\n    height: auto;\n}\n.viewer[data-v-5f697d13] {\n    margin-top: 320px;\n}\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\nvideo[data-v-5f697d13] {\r\n    width: 100%;\r\n    height: auto;\n}\n.viewer[data-v-5f697d13] {\r\n    margin-top: 320px;\n}\r\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -8510,7 +8516,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n.chat[data-v-0d66c37a] {\r\n    height: 250px;\n}\n.chat-messages[data-v-0d66c37a] {\r\n    overflow-y: scroll;\r\n    height: 350px;\n}\n.chat-box[data-v-0d66c37a] {\r\n    background-color: #f6f6f6;\r\n    padding: 5px 10px;\r\n    border-radius: 10px;\r\n    font-size: 12px;\r\n    margin: 10px;\n}\n.chat-box-user[data-v-0d66c37a] {\r\n    font-size: 11px;\r\n    font-weight: bold;\r\n    padding-bottom: 0 !important;\n}\n.chat-box-message[data-v-0d66c37a] {\r\n    padding: 0;\n}\n.chat-box-time[data-v-0d66c37a] {\n}\r\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n.chat[data-v-0d66c37a] {\r\n    height: 100%;\n}\n.chat-messages[data-v-0d66c37a] {\r\n    overflow-y: scroll;\r\n    height: 100%;\n}\n.chat-box[data-v-0d66c37a] {\r\n    background-color: #f6f6f6;\r\n    padding: 5px 10px;\r\n    border-radius: 10px;\r\n    font-size: 12px;\r\n    margin: 10px;\n}\n.chat-box-user[data-v-0d66c37a] {\r\n    font-size: 11px;\r\n    font-weight: bold;\r\n    padding-bottom: 0 !important;\n}\n.chat-box-message[data-v-0d66c37a] {\r\n    padding: 0;\n}\n.chat-box-time[data-v-0d66c37a] {\n}\r\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

@@ -262,6 +262,9 @@ export default {
             this.streamingPresenceChannel = window.Echo.join(
                 `streaming-channel.${this.streamId}`
             );
+            this.streamingPresenceChannel.error((error) => {
+                console.log(error)
+            })
 
             this.streamingPresenceChannel.here((users) => {
                 console.log("users:", users)

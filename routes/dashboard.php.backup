@@ -18,27 +18,29 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
     Route::get('/login', [AdminAuthController::class, 'getLogin'])->name('loginPage');
     Route::post('/login', [AdminAuthController::class, 'postLogin'])->name('login');
 
-    //Logout
-    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+    Route::group(['middleware' => 'adminauth'], function () {
 
-    //Dashobard home page
-    Route::get('/',[DashboardController::class, 'home'])->name('home');
+        //Logout
+        Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
 
-    // Chat Controller
-    Route::prefix('chat')->group(function () {
-        Route::post('messages', [LiveChatController::class, 'sendMessage']);
-        Route::post('/get/messages', [LiveChatController::class, 'getMessages']);
-    });
+        //Dashobard home page
+        Route::get('/',[DashboardController::class, 'home'])->name('home');
 
-    // Live Controller
-    Route::prefix('live')->group(function () {
-        Route::get('/', [LiveController::class, 'index'])->name('live.home');
-        Route::get('/create', [LiveController::class, 'create'])->name('live.create');
-        Route::post('/store', [LiveController::class, 'store'])->name('live.store');
-        Route::get('/{live_id}', [LiveController::class, 'live'])->name('live.streaming');
-        Route::post('/set/started', [LiveController::class, 'liveStarted'])->name('live.started');
-        Route::post('/set/ended', [LiveController::class, 'liveEnded'])->name('live.ended');
-    });
+        // Chat Controller
+        Route::prefix('chat')->group(function () {
+            Route::post('messages', [LiveChatController::class, 'sendMessage']);
+            Route::post('/get/messages', [LiveChatController::class, 'getMessages']);
+        });
+
+        // Live Controller
+        Route::prefix('live')->group(function () {
+            Route::get('/', [LiveController::class, 'index'])->name('live.home');
+            Route::get('/create', [LiveController::class, 'create'])->name('live.create');
+            Route::post('/store', [LiveController::class, 'store'])->name('live.store');
+            Route::get('/{live_id}', [LiveController::class, 'live'])->name('live.streaming');
+            Route::post('/set/started', [LiveController::class, 'liveStarted'])->name('live.started');
+            Route::post('/set/ended', [LiveController::class, 'liveEnded'])->name('live.ended');
+        });
 
     Route::get('/playback', [DashboardController::class, 'playback'])->name('live.playback');
     Route::get('/video-streaming', [DashboardController::class, 'videoStreaming'])->name('live.video-streaming');
@@ -47,6 +49,8 @@ Route::group(['prefix' => 'dashboard', 'as' => 'dashboard.'], function () {
     Route::get('/calendar', [DashboardController::class, 'calendar'])->name('calendar');
     Route::get('/users', [DashboardController::class, 'users'])->name('users');
 
+
+    });
 });
 
 //Route::prefix('dashboard')->group(function () {

@@ -181,6 +181,9 @@ export default {
             document.getElementById('viewer').requestFullscreen();
         },
   },
+    mounted() {
+      //this.joinBroadcast()
+    }
 };
 </script>
 

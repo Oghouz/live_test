@@ -40,7 +40,8 @@ class LiveChatController extends Controller
      */
     public function store(Request $request)
     {
-        $user = Auth::guard('admin')->user();
+        //$user = Auth::guard('admin')->user();
+        $user = Auth::user();
         $message = $request->message();
 
 //        DB::table('chat_messages')->insert([]);
@@ -98,7 +99,7 @@ class LiveChatController extends Controller
 
     public function sendMessage(Request $request)
     {
-        $user = Auth::guard('admin')->user();
+        $user = Auth::guard('web')->user();
         $liveId = $request->get('live_id');
         $userId = $request->get('user_id');
         $sender = $request->get('username');

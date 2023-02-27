@@ -126,11 +126,11 @@ export default {
 
 <style scoped>
 .chat {
-    height: 250px;
+    height: 100%;
 }
 .chat-messages {
     overflow-y: scroll;
-    height: 350px;
+    height: 100%;
 }
 .chat-box {
     background-color: #f6f6f6;

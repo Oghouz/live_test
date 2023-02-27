@@ -19,7 +19,7 @@ class LiveController extends Controller
     }
     public function live(Request $request, $live_id)
     {
-        $user = Auth::guard('admin')->user();
+        $user = Auth::guard('web')->user();
         $live = Live::find($live_id);
 
         return view('dashboard.live.live', [
